@@ -34,7 +34,6 @@ services:
     command: python django_app/manage.py runserver 0.0.0.0:8000
     environment:
       DJANGO_SETTINGS_MODULE: settings.dev
-      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
     volumes:
       - ./backend:/app
     env_file: .env
@@ -104,7 +103,6 @@ services:
     env_file: .env
     networks:
       - codegard_net
-
 
 networks:
   codegard_net:

@@ -2,14 +2,14 @@ DEV := docker compose -f docker-compose.dev.yml
 PROD := docker compose -f docker-compose.prod.yml
 DEV_TEST := $(DEV) --profile test
 
-.PHONY: help up up-build build down restart logs ps shell migrate makemigrations superuser \
+.PHONY: help dev dev-build build down restart logs ps shell migrate makemigrations superuser \
         test-backend test-judge build-test-backend build-test-judge \
         prod-up prod-up-build prod-down prod-restart prod-logs prod-ps
 
 help:
 	@echo "Dev:"
-	@echo "  make up                   Start dev containers"
-	@echo "  make up-build             Start dev containers with image build"
+	@echo "  make dev                  Start dev containers"
+	@echo "  make dev-build            Start dev containers with image build"
 	@echo "  make build                Build dev images"
 	@echo "  make down                 Stop and remove dev containers"
 	@echo "  make restart              Restart dev containers"
@@ -36,10 +36,10 @@ help:
 	@echo "  make build-test-backend   Rebuild backend test image"
 	@echo "  make build-test-judge     Rebuild judge test image"
 
-up:
+dev:
 	$(DEV) up
 
-up-build:
+dev-build:
 	$(DEV) up --build
 
 build:
@@ -48,7 +48,7 @@ build:
 down:
 	$(DEV) down
 
-restart: down up
+restart: down dev
 
 logs:
 	$(DEV) logs -f

@@ -13,3 +13,10 @@ def user_avatar_upload_to(_instance, filename: str) -> str:
 
 class User(AbstractUser):
     avatar = models.ImageField(upload_to=user_avatar_upload_to, blank=True, null=True)
+
+
+class UserAvatar(User):
+    class Meta:
+        proxy = True
+        verbose_name = "user avatar"
+        verbose_name_plural = "user avatars"

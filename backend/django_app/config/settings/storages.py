@@ -50,15 +50,30 @@ if R2_ENABLED:
             "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
         },
     }
-
-    THUMBNAIL_QUALITY = 85
-    THUMBNAIL_FORMAT = "WEBP"
-    THUMBNAIL_PRESERVE_FORMAT = False
-    THUMBNAIL_COLORSPACE = "RGB"
-    THUMBNAIL_PREFIX = "thumbnails/"
-    THUMBNAIL_CACHE_TIMEOUT = 60 * 60 * 24 * 30
 else:
     STORAGES = {
         "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
         "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
     }
+
+
+THUMBNAIL_QUALITY = 85
+THUMBNAIL_FORMAT = "WEBP"
+THUMBNAIL_PRESERVE_FORMAT = False
+THUMBNAIL_COLORSPACE = "RGB"
+
+THUMBNAIL_PREFIX = "thumbnails/"
+THUMBNAIL_CACHE_TIMEOUT = 60 * 60 * 24 * 30
+
+# IMPORTANT:
+# Do not set THUMBNAIL_STORAGE to a raw backend path like "storages.backends.s3.S3Storage".
+# That makes sorl-thumbnail instantiate a brand-new storage without our R2 OPTIONS, which
+# results in Unauthorized/AccessDenied when uploading thumbnails.
+#
+# By leaving THUMBNAIL_STORAGE unset, sorl-thumbnail will use Django's default storage
+# (which is already configured above via STORAGES["default"]).
+
+THUMBNAIL_KVSTORE = "sorl.thumbnail.kvstores.cached_db_kvstore.KVStore"
+
+THUMBNAIL_DEBUG = False
+THUMBNAIL_UPSCALE = False

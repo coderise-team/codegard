@@ -1,8 +1,13 @@
+import logging
+
 from django.utils import timezone
 
 from celery import shared_task
 
 from .models import Contest
+
+
+logger = logging.getLogger(__name__)
 
 
 @shared_task
@@ -33,7 +38,7 @@ def update_contest_statuses() -> dict:
     )
     pending_updated = pending.update(status=Contest.Status.PENDING, updated_at=now)
 
-    return {
+    summary = {
         "updated": {
             "finished": finished_updated,
             "active": active_updated,
@@ -46,3 +51,11 @@ def update_contest_statuses() -> dict:
         },
     }
 
+
+    logger.info(
+        "update_contest_statuses updated=%s total=%s",
+        summary["updated"],
+        summary["total_current"],
+    )
+
+    return summary

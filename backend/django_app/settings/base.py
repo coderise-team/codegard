@@ -5,7 +5,9 @@ import environ
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 env = environ.Env()
-environ.Env.read_env(BASE_DIR.parent / ".env")
+_env_file = BASE_DIR.parent / ".env"
+if _env_file.exists():
+    environ.Env.read_env(_env_file)
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -17,6 +19,8 @@ INSTALLED_APPS = [
     # third-party
     "rest_framework",
     "channels",
+    "storages",
+    "sorl.thumbnail",
     # local
     "apps.users",
     "apps.problems",
@@ -24,6 +28,8 @@ INSTALLED_APPS = [
     "apps.submissions",
     "apps.realtime",
 ]
+
+AUTH_USER_MODEL = "users.User"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -70,6 +76,14 @@ USE_TZ = True
 STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
+}
+
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework.authentication.SessionAuthentication",
@@ -80,3 +94,5 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 20,
 }
+
+from config.settings.storages import *  # noqa: F403,F401,E402

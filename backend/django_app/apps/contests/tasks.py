@@ -4,6 +4,9 @@ from django.utils import timezone
 
 from celery import shared_task
 
+from django.conf import settings
+from redis import Redis
+
 from .models import Contest
 
 
@@ -38,23 +41,43 @@ def update_contest_statuses() -> dict:
     )
     pending_updated = pending.update(status=Contest.Status.PENDING, updated_at=now)
 
+    total_current = {
+        "finished": Contest.objects.filter(status=Contest.Status.FINISHED).count(),
+        "active": Contest.objects.filter(status=Contest.Status.ACTIVE).count(),
+        "pending": Contest.objects.filter(status=Contest.Status.PENDING).count(),
+    }
+
+    # Store previous totals in Redis so we can report net changes since the last run,
+    # including contests created/edited outside this task.
+    redis = Redis.from_url(settings.CELERY_BROKER_URL)
+    key = "contests:status_totals"
+    prev_raw = redis.hgetall(key)
+    if prev_raw:
+        prev = {k.decode(): int(v) for k, v in prev_raw.items()}
+        delta = {k: total_current[k] - prev.get(k, 0) for k in total_current}
+    else:
+        delta = dict(total_current)
+    redis.hset(
+        key,
+        mapping={k: str(v) for k, v in total_current.items()},
+    )
+
     summary = {
-        "updated": {
+        # What Celery changed in DB during this run.
+        "db_updated": {
             "finished": finished_updated,
             "active": active_updated,
             "pending": pending_updated,
         },
-        "total_current": {
-            "finished": Contest.objects.filter(status=Contest.Status.FINISHED).count(),
-            "active": Contest.objects.filter(status=Contest.Status.ACTIVE).count(),
-            "pending": Contest.objects.filter(status=Contest.Status.PENDING).count(),
-        },
+        # Net change in totals since the previous run (includes contests created/edited elsewhere).
+        "delta_since_last_run": delta,
+        "total_current": total_current,
     }
 
-
     logger.info(
-        "update_contest_statuses updated=%s total=%s",
-        summary["updated"],
+        "update_contest_statuses db_updated=%s delta=%s total=%s",
+        summary["db_updated"],
+        summary["delta_since_last_run"],
         summary["total_current"],
     )
 

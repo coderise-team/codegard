@@ -52,7 +52,9 @@ class AvatarUploadSerializer(serializers.ModelSerializer):
         elif image.mode not in {"RGB", "RGBA"}:
             image = image.convert("RGB")
 
-        image.thumbnail((MAX_AVATAR_DIM_PX, MAX_AVATAR_DIM_PX), Image.Resampling.LANCZOS)
+        image.thumbnail(
+            (MAX_AVATAR_DIM_PX, MAX_AVATAR_DIM_PX), Image.Resampling.LANCZOS
+        )
 
         output = io.BytesIO()
         image.save(output, format=AVATAR_OUTPUT_FORMAT, quality=AVATAR_OUTPUT_QUALITY)

@@ -14,7 +14,9 @@ def test_avatar_upload_stores_image_and_generates_thumbnails(settings, tmp_path)
             "BACKEND": "django.core.files.storage.FileSystemStorage",
             "OPTIONS": {"location": tmp_path / "media"},
         },
-        "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"
+        },
     }
     settings.THUMBNAIL_PREFIX = "thumbnails/"
 
@@ -42,4 +44,3 @@ def test_avatar_upload_stores_image_and_generates_thumbnails(settings, tmp_path)
     assert response.data["avatar"]
     assert response.data["thumbnails"]["128"]
     assert response.data["thumbnails"]["256"]
-

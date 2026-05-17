@@ -8,9 +8,7 @@ function App() {
   return (
     <>
       <section id="center">
-        <div className="hero">
-
-        </div>
+        <div className="hero"></div>
         <div>
           <h1>Get started</h1>
           <p>
@@ -35,8 +33,7 @@ function App() {
           </svg>
           <h2>Documentation</h2>
           <p>Your questions, answered</p>
-          <ul>
-          </ul>
+          <ul></ul>
         </div>
         <div id="social">
           <svg className="icon" role="presentation" aria-hidden="true">

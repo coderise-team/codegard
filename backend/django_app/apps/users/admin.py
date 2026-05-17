@@ -1,6 +1,5 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
-
 from sorl.thumbnail import get_thumbnail
 
 from .models import User

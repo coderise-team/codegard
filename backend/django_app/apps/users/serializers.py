@@ -5,7 +5,6 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from PIL import Image, ImageOps, UnidentifiedImageError
 from rest_framework import serializers
 
-
 from .models import User
 
 # Maximum allowed upload size: 5 MB

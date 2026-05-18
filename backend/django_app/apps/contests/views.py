@@ -72,7 +72,7 @@ class ContestViewSet(viewsets.ModelViewSet):
             )
             queryset = queryset.annotate(is_joined_annotated=Exists(user_joined))
 
-        return queryset
+        return queryset.order_by("-start_time")
 
     @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
     def join(self, request, pk=None):

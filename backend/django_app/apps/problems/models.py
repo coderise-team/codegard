@@ -33,6 +33,8 @@ class Problem(models.Model):
 
 
 class TestCase(models.Model):
+    __test__ = False
+
     problem = models.ForeignKey(
         Problem,
         on_delete=models.CASCADE,

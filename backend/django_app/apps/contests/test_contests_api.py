@@ -241,7 +241,10 @@ class TestContestStatus:
         finished_contest.update_status()
         assert finished_contest.status == Contest.Status.FINISHED
 
-    def test_celery_task_updates_statuses_in_bulk(self, db):
+    from unittest.mock import patch
+
+    @patch("apps.contests.tasks.Redis")
+    def test_celery_task_updates_statuses_in_bulk(self, mock_redis, db):
         now = timezone.now()
         pending = Contest.objects.create(
             title="Pending",

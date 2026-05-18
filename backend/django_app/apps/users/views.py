@@ -2,7 +2,6 @@ from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
 from sorl.thumbnail import get_thumbnail
 
 from .serializers import AvatarUploadSerializer

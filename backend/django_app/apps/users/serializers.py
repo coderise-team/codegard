@@ -5,7 +5,6 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from PIL import Image, ImageOps, UnidentifiedImageError
 from rest_framework import serializers
 
-
 from .models import User
 
 # Maximum allowed upload size: 5 MB
@@ -28,7 +27,8 @@ class AvatarUploadSerializer(serializers.ModelSerializer):
     def validate_avatar(self, value):
         if value.size > MAX_AVATAR_SIZE_BYTES:
             raise serializers.ValidationError(
-                f"Image too large. Maximum size is {MAX_AVATAR_SIZE_BYTES // (1024 * 1024)} MB."
+                f"Image too large. Maximum size is "
+                f"{MAX_AVATAR_SIZE_BYTES // (1024 * 1024)} MB."
             )
         content_type = getattr(value, "content_type", None)
         if content_type and content_type not in ALLOWED_CONTENT_TYPES:
@@ -52,7 +52,9 @@ class AvatarUploadSerializer(serializers.ModelSerializer):
         elif image.mode not in {"RGB", "RGBA"}:
             image = image.convert("RGB")
 
-        image.thumbnail((MAX_AVATAR_DIM_PX, MAX_AVATAR_DIM_PX), Image.Resampling.LANCZOS)
+        image.thumbnail(
+            (MAX_AVATAR_DIM_PX, MAX_AVATAR_DIM_PX), Image.Resampling.LANCZOS
+        )
 
         output = io.BytesIO()
         image.save(output, format=AVATAR_OUTPUT_FORMAT, quality=AVATAR_OUTPUT_QUALITY)
@@ -65,7 +67,8 @@ class AvatarUploadSerializer(serializers.ModelSerializer):
         )
         if processed.size > MAX_AVATAR_SIZE_BYTES:
             raise serializers.ValidationError(
-                f"Image too large after processing. Maximum size is {MAX_AVATAR_SIZE_BYTES // (1024 * 1024)} MB."
+                f"Image too large after processing. "
+                f"Maximum size is {MAX_AVATAR_SIZE_BYTES // (1024 * 1024)} MB."
             )
 
         return processed

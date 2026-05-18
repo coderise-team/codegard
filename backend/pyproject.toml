@@ -22,6 +22,7 @@ dependencies = [
 dev = [
     "django-debug-toolbar>=6.3.0",
     "pytest>=9.0.3",
+    "pytest-cov>=7.1.0",
     "pytest-django>=4.12.0",
     "ruff>=0.15.12",
 ]
@@ -35,3 +36,7 @@ line-length = 88
 
 [tool.ruff.lint]
 select = ["E", "F", "I"]
+
+[tool.ruff.lint.per-file-ignores]
+"**/migrations/*.py" = ["E501"]
+"**/settings/*.py" = ["E501", "F403", "F405"]

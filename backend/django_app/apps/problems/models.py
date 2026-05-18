@@ -50,4 +50,3 @@ class TestCase(models.Model):
 
     def __str__(self):
         return f"TestCase #{self.pk} for '{self.problem.title}'"
-

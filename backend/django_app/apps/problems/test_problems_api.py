@@ -1,14 +1,13 @@
 import pytest
+from apps.problems.models import Problem, TestCase
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from apps.problems.models import Problem, TestCase
-
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def api_client():
@@ -69,6 +68,7 @@ def problem_with_test_cases(problem):
 # List & filter tests
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.django_db
 class TestProblemList:
     def test_list_returns_200(self, api_client, problem):
@@ -84,8 +84,20 @@ class TestProblemList:
         assert problem.title in titles
 
     def test_filter_by_difficulty_easy(self, api_client, db):
-        Problem.objects.create(title="Easy one", description="", difficulty="easy", time_limit=1000, memory_limit=256)
-        Problem.objects.create(title="Hard one", description="", difficulty="hard", time_limit=1000, memory_limit=256)
+        Problem.objects.create(
+            title="Easy one",
+            description="",
+            difficulty="easy",
+            time_limit=1000,
+            memory_limit=256,
+        )
+        Problem.objects.create(
+            title="Hard one",
+            description="",
+            difficulty="hard",
+            time_limit=1000,
+            memory_limit=256,
+        )
 
         url = reverse("problems-list")
         response = api_client.get(url, {"difficulty": "easy"})
@@ -96,7 +108,13 @@ class TestProblemList:
             assert problem["difficulty"] == "easy"
 
     def test_filter_by_difficulty_hard(self, api_client, db):
-        Problem.objects.create(title="Hard one", description="", difficulty="hard", time_limit=1000, memory_limit=256)
+        Problem.objects.create(
+            title="Hard one",
+            description="",
+            difficulty="hard",
+            time_limit=1000,
+            memory_limit=256,
+        )
 
         url = reverse("problems-list")
         response = api_client.get(url, {"difficulty": "hard"})
@@ -114,6 +132,7 @@ class TestProblemList:
 # Retrieve tests
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.django_db
 class TestProblemRetrieve:
     def test_retrieve_returns_200(self, api_client, problem):
@@ -122,7 +141,9 @@ class TestProblemRetrieve:
         assert response.status_code == status.HTTP_200_OK
         assert response.data["title"] == problem.title
 
-    def test_user_sees_only_visible_test_cases(self, auth_client, problem_with_test_cases):
+    def test_user_sees_only_visible_test_cases(
+        self, auth_client, problem_with_test_cases
+    ):
         url = reverse("problems-detail", args=[problem_with_test_cases.pk])
         response = auth_client.get(url)
         assert response.status_code == status.HTTP_200_OK
@@ -140,6 +161,7 @@ class TestProblemRetrieve:
 # ---------------------------------------------------------------------------
 # Create tests
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.django_db
 class TestProblemCreate:
@@ -176,20 +198,36 @@ class TestProblemCreate:
 
     def test_regular_user_cannot_create(self, auth_client):
         url = reverse("problems-list")
-        data = {"title": "Hack", "description": "", "difficulty": "easy", "time_limit": 1000, "memory_limit": 256}
+        data = {
+            "title": "Hack",
+            "description": "",
+            "difficulty": "easy",
+            "time_limit": 1000,
+            "memory_limit": 256,
+        }
         response = auth_client.post(url, data, format="json")
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_unauthenticated_cannot_create(self, api_client):
         url = reverse("problems-list")
-        data = {"title": "Hack", "description": "", "difficulty": "easy", "time_limit": 1000, "memory_limit": 256}
+        data = {
+            "title": "Hack",
+            "description": "",
+            "difficulty": "easy",
+            "time_limit": 1000,
+            "memory_limit": 256,
+        }
         response = api_client.post(url, data, format="json")
-        assert response.status_code in [status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN]
+        assert response.status_code in [
+            status.HTTP_401_UNAUTHORIZED,
+            status.HTTP_403_FORBIDDEN,
+        ]
 
 
 # ---------------------------------------------------------------------------
 # Update tests
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.django_db
 class TestProblemUpdate:
@@ -210,6 +248,7 @@ class TestProblemUpdate:
 # Delete tests
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.django_db
 class TestProblemDelete:
     def test_admin_can_delete(self, admin_client, problem):
@@ -222,4 +261,3 @@ class TestProblemDelete:
         url = reverse("problems-detail", args=[problem.pk])
         response = auth_client.delete(url)
         assert response.status_code == status.HTTP_403_FORBIDDEN
-

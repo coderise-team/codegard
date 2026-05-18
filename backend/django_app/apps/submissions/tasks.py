@@ -1,5 +1,6 @@
 import json
 import logging
+
 import redis
 from django.conf import settings
 
@@ -44,4 +45,3 @@ def push_to_judge_queue(submission) -> bool:
     except redis.RedisError as e:
         logger.error(f"Failed to push submission #{submission.pk} to Redis: {e}")
         return False
-

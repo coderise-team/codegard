@@ -1,4 +1,4 @@
-from rest_framework import viewsets, status, mixins
+from rest_framework import mixins, status, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -55,4 +55,3 @@ class SubmissionViewSet(
             },
             status=status.HTTP_201_CREATED,
         )
-

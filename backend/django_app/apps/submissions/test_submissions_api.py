@@ -1,15 +1,14 @@
-import pytest
+from datetime import timedelta
 from unittest.mock import patch
+
+import pytest
+from apps.contests.models import Contest
+from apps.problems.models import Problem
+from apps.submissions.models import Submission
 from django.urls import reverse
 from django.utils import timezone
-from datetime import timedelta
 from rest_framework import status
 from rest_framework.test import APIClient
-
-from apps.submissions.models import Submission
-from apps.problems.models import Problem
-from apps.contests.models import Contest
-
 
 # ---------------------------------------------------------------------------
 # Fixtures

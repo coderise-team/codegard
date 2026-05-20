@@ -37,6 +37,9 @@ services:
     command: gunicorn -k uvicorn.workers.UvicornWorker config.asgi:application --bind 0.0.0.0:8000 --workers 4
     environment:
       DJANGO_SETTINGS_MODULE: settings.prod
+      PYTHONPATH: /shared
+    volumes:
+      - ./shared:/shared
     env_file: .env
     depends_on:
       postgres:
@@ -57,9 +60,12 @@ services:
     build:
       context: ./judge
       target: web
-    command: uvicorn judge_app.main:app --host 0.0.0.0 --port 8001 --workers 2
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8001 --workers 2
+    environment:
+      PYTHONPATH: /shared
     env_file: .env
     volumes:
+      - ./shared:/shared
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - codegard_net

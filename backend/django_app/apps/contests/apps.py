@@ -2,4 +2,4 @@ from django.apps import AppConfig
 
 
 class ContestsConfig(AppConfig):
-    name = 'apps.contests'
+    name = "apps.contests"

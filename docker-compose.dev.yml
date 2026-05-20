@@ -34,8 +34,9 @@ services:
     command: python django_app/manage.py runserver 0.0.0.0:8000
     environment:
       DJANGO_SETTINGS_MODULE: settings.dev
+      PYTHONPATH: /shared
     volumes:
-      - ./backend:/app
+      - ./shared:/shared
     env_file: .env
     ports:
       - "8000:8000"
@@ -43,7 +44,7 @@ services:
       postgres:
         condition: service_healthy
       redis:
-        condition: service_started
+        condition: service_healthy
     networks:
       - codegard_net
     healthcheck:
@@ -52,6 +53,68 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
+    develop:
+      watch:
+        - action: sync
+          path: ./backend
+          target: /app
+        - action: sync
+          path: ./shared
+          target: /shared
+        - action: rebuild
+          path: ./backend/pyproject.toml
+        - action: rebuild
+          path: ./backend/uv.lock
+
+  celery-worker:
+    build:
+      context: ./backend
+      target: dev
+    command: celery -A config worker -l info
+    environment:
+      DJANGO_SETTINGS_MODULE: settings.dev
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - codegard_net
+    develop:
+      watch:
+        - action: sync
+          path: ./backend
+          target: /app
+        - action: rebuild
+          path: ./backend/pyproject.toml
+        - action: rebuild
+          path: ./backend/uv.lock
+
+  celery-beat:
+    build:
+      context: ./backend
+      target: dev
+    command: celery -A config beat -l info
+    environment:
+      DJANGO_SETTINGS_MODULE: settings.dev
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - codegard_net
+    develop:
+      watch:
+        - action: sync
+          path: ./backend
+          target: /app
+        - action: rebuild
+          path: ./backend/pyproject.toml
+        - action: rebuild
+          path: ./backend/uv.lock
 
   backend-test:
     build:
@@ -62,8 +125,9 @@ services:
       - test
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      PYTHONPATH: /shared
     volumes:
-      - ./backend:/app
+      - ./shared:/shared
     env_file: .env
     depends_on:
       postgres:
@@ -75,9 +139,11 @@ services:
     build:
       context: ./judge
       target: web
-    command: uvicorn judge_app.main:app --host 0.0.0.0 --port 8001 --reload
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8001
+    environment:
+      PYTHONPATH: /shared
     volumes:
-      - ./judge:/app
+      - ./shared:/shared
       - /var/run/docker.sock:/var/run/docker.sock
     env_file: .env
     ports:
@@ -90,8 +156,18 @@ services:
       timeout: 5s
       retries: 5
       start_period: 20s
-
-
+    develop:
+      watch:
+        - action: sync
+          path: ./judge
+          target: /app
+        - action: sync
+          path: ./shared
+          target: /shared
+        - action: rebuild
+          path: ./judge/pyproject.toml
+        - action: rebuild
+          path: ./judge/uv.lock
 
   judge-test:
     build:
@@ -100,8 +176,10 @@ services:
     command: run-tests
     profiles:
       - test
+    environment:
+      PYTHONPATH: /shared
     volumes:
-      - ./judge:/app
+      - ./shared:/shared
     env_file: .env
     networks:
       - codegard_net

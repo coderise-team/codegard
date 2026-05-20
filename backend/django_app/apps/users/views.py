@@ -36,10 +36,13 @@ class AvatarUploadView(APIView):
         user.save(update_fields=["avatar"])
         thumb_128 = get_thumbnail(user.avatar, "128x128", crop="center", quality=85)
         thumb_256 = get_thumbnail(user.avatar, "256x256", crop="center", quality=85)
-        return Response({
-            "avatar": user.avatar.url,
-            "thumbnails": {
-                "128": thumb_128.url,
-                "256": thumb_256.url,
-            },
-        })
+
+        return Response(
+            {
+                "avatar": user.avatar.url,
+                "thumbnails": {
+                    "128": thumb_128.url,
+                    "256": thumb_256.url,
+                },
+            }
+        )

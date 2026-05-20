@@ -139,6 +139,10 @@ activemq-data/
 .env.*
 !.env.example
 .envrc
+
+# Celery beat state
+celerybeat-schedule
+celerybeat-schedule-*
 .venv
 env/
 venv/

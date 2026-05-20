@@ -11,6 +11,7 @@ from .serializers import AvatarUploadSerializer, UserRegisterSerializer
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]
+
     def post(self, request):
         serializer = UserRegisterSerializer(data=request.data)
         if serializer.is_valid():

@@ -1,3 +1,4 @@
+from datetime import timedelta
 from pathlib import Path
 
 import environ
@@ -28,9 +29,15 @@ INSTALLED_APPS = [
     "apps.submissions",
     "apps.realtime",
     "rest_framework_simplejwt",
+    'rest_framework_simplejwt.token_blacklist',
 ]
 
 AUTH_USER_MODEL = "users.User"
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+}
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",

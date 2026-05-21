@@ -24,7 +24,10 @@ def update_contest_statuses() -> dict:
     finished = Contest.objects.filter(end_time__lt=now).exclude(
         status=Contest.Status.FINISHED
     )
+    finished_ids = list(finished.values_list("pk", flat=True))
     finished_updated = finished.update(status=Contest.Status.FINISHED, updated_at=now)
+    if finished_updated:
+        _broadcast_contest_ended(finished_ids)
 
     # Active: start_time <= now <= end_time
     active = Contest.objects.filter(start_time__lte=now, end_time__gte=now).exclude(
@@ -80,3 +83,18 @@ def update_contest_statuses() -> dict:
     )
 
     return summary
+
+
+def _broadcast_contest_ended(contest_ids: list[int]) -> None:
+    from asgiref.sync import async_to_sync
+    from channels.layers import get_channel_layer
+
+    channel_layer = get_channel_layer()
+    if channel_layer is None:
+        return
+
+    for contest_id in contest_ids:
+        async_to_sync(channel_layer.group_send)(
+            f"contest_{contest_id}",
+            {"type": "contest_ended"},
+        )

@@ -34,7 +34,7 @@ services:
     command: python django_app/manage.py runserver 0.0.0.0:8000
     environment:
       DJANGO_SETTINGS_MODULE: settings.dev
-      PYTHONPATH: /shared
+      PYTHONPATH: /app/django_app:/shared
     volumes:
       - ./shared:/shared
     env_file: .env
@@ -125,7 +125,8 @@ services:
       - test
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
-      PYTHONPATH: /shared
+      PYTHONPATH: /app/django_app:/shared
+      DJANGO_SETTINGS_MODULE: settings.test
     volumes:
       - ./shared:/shared
     env_file: .env

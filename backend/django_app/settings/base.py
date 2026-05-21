@@ -106,4 +106,14 @@ CELERY_TASK_ALWAYS_EAGER = env.bool("CELERY_TASK_ALWAYS_EAGER", default=False)
 # Redis (shared)
 REDIS_URL = env("REDIS_URL", default=CELERY_BROKER_URL)
 
-from config.settings.storages import *  # noqa: F403,F401,E402
+from config.settings.storages import *  # noqa: F403,F401,E402,I001
+
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [env("REDIS_URL", default="redis://redis:6379/0")],
+        },
+    },
+}

@@ -10,6 +10,7 @@ def user_avatar_upload_to(_instance, filename: str) -> str:
     ext = ext if ext in {".jpg", ".jpeg", ".png", ".webp"} else ".jpg"
     return f"avatars/{uuid.uuid4().hex}{ext}"
 
+
 class User(AbstractUser):
     email = models.EmailField(unique=True)
     avatar = models.ImageField(upload_to=user_avatar_upload_to, blank=True, null=True)

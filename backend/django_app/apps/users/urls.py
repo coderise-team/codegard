@@ -6,8 +6,8 @@ from .views import AvatarUploadView, RegisterView
 app_name = "users"
 
 urlpatterns = [
-    path('register/', RegisterView.as_view()),
-    path('login/', TokenObtainPairView.as_view()),
-    path('token/refresh/', TokenRefreshView.as_view()),
-    path('avatar/', AvatarUploadView.as_view(), name="avatar-upload"),
+    path("register/", RegisterView.as_view()),
+    path("login/", TokenObtainPairView.as_view()),
+    path("token/refresh/", TokenRefreshView.as_view()),
+    path("avatar/", AvatarUploadView.as_view(), name="avatar-upload"),
 ]

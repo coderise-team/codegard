@@ -31,7 +31,7 @@ services:
     build:
       context: ./backend
       target: dev
-    command: python django_app/manage.py runserver 0.0.0.0:8000
+    command: uvicorn config.asgi:application --host 0.0.0.0 --port 8000 --reload --reload-dir django_app
     environment:
       DJANGO_SETTINGS_MODULE: settings.dev
       PYTHONPATH: /app/django_app:/shared

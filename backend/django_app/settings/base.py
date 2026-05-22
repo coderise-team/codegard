@@ -10,6 +10,7 @@ if _env_file.exists():
     environ.Env.read_env(_env_file)
 
 INSTALLED_APPS = [
+    "daphne",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",

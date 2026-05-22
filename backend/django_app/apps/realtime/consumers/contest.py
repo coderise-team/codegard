@@ -13,6 +13,7 @@ class ContestConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self):
         user = self.scope["user"]
         if not user.is_authenticated:
+            await self.accept()
             await self.close(code=4001)
             return
 
@@ -21,11 +22,13 @@ class ContestConsumer(AsyncJsonWebsocketConsumer):
 
         contest = await self.get_contest()
         if contest is None:
+            await self.accept()
             await self.close(code=4004)
             return
 
         is_participant = await self.is_participant(user, contest.pk)
         if not is_participant:
+            await self.accept()
             await self.close(code=4003)
             return
 

@@ -22,12 +22,16 @@ def api_client():
 
 @pytest.fixture
 def user(db, django_user_model):
-    return django_user_model.objects.create_user(username="user", email="user@test.com", password="pass")
+    return django_user_model.objects.create_user(
+        username="user", email="user@test.com", password="pass"
+    )
 
 
 @pytest.fixture
 def user2(db, django_user_model):
-    return django_user_model.objects.create_user(username="user2", email="user2@test.com", password="pass")
+    return django_user_model.objects.create_user(
+        username="user2", email="user2@test.com", password="pass"
+    )
 
 
 @pytest.fixture

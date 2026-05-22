@@ -73,6 +73,9 @@ services:
     command: celery -A config worker -l info
     environment:
       DJANGO_SETTINGS_MODULE: settings.dev
+      PYTHONPATH: /app/django_app:/shared
+    volumes:
+      - ./shared:/shared
     env_file: .env
     depends_on:
       postgres:
@@ -98,6 +101,9 @@ services:
     command: celery -A config beat -l info
     environment:
       DJANGO_SETTINGS_MODULE: settings.dev
+      PYTHONPATH: /app/django_app:/shared
+    volumes:
+      - ./shared:/shared
     env_file: .env
     depends_on:
       postgres:

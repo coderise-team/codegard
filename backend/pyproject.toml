@@ -33,7 +33,7 @@ dev = [
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "settings.dev"
-pythonpath = ["django_app"]
+pythonpath = ["django_app", "../shared"]
 asyncio_mode = "auto"
 
 [tool.ruff]

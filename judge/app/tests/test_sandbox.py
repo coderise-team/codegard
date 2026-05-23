@@ -1,6 +1,7 @@
 import socket as _socket
 
 import docker.errors
+import pytest
 
 from app.core.sandbox import run_in_sandbox
 
@@ -122,6 +123,13 @@ class TestRunInSandbox:
 
         raw_sock = client.api.exec_start.return_value._sock
         raw_sock.sendall.assert_not_called()
+
+    def test_unsupported_language_raises(self, monkeypatch):
+        client = make_mock_docker_client()
+        _patch(monkeypatch, client)
+
+        with pytest.raises(NotImplementedError):
+            run_in_sandbox("print(1)", "", 1000, language="cpp")
 
     def test_remove_api_error_is_logged_not_raised(self, monkeypatch):
         client = make_mock_docker_client()

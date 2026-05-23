@@ -2,8 +2,8 @@
 Isolated code execution in a fresh Docker container.
 
 Each call to run_in_sandbox spins up a new container, injects the solution
-via put_archive, executes it with exec_run, reads output, then removes the
-container. Containers are never reused between submissions.
+via put_archive, executes it with exec_create/exec_start, reads output, then
+removes the container. Containers are never reused between submissions.
 """
 
 import io
@@ -109,6 +109,9 @@ def run_in_sandbox(
     Execute user code in an isolated Docker container.
     Always spins up a fresh container and removes it after execution.
     """
+    if language != "python":
+        raise NotImplementedError(f"Language {language!r} is not supported")
+
     client = _get_docker_client()
     timeout_sec = time_limit_ms / 1000
     container = None

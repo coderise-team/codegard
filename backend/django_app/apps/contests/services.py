@@ -10,7 +10,6 @@ Formula:
   leaderboard = sorted by score DESC, penalty ASC, last_ac_at ASC
 """
 
-from apps.submissions.models import Submission
 from django.db import transaction
 
 from .models import Contest, ContestScore
@@ -26,6 +25,8 @@ def calculate_score(user, contest: Contest) -> ContestScore:
 
     Returns the updated ContestScore instance.
     """
+    from apps.submissions.models import Submission
+
     submissions = Submission.objects.filter(user=user, contest=contest).order_by(
         "created_at"
     )

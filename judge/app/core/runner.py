@@ -26,7 +26,9 @@ def run_submission(request: SubmissionRequest) -> SubmissionResponse:
     return SubmissionResponse(
         submission_id=request.submission_id,
         verdict=verdict,
-        execution_time_ms=max(r.execution_time_ms for r in all_results) if all_results else None,
+        execution_time_ms=max(r.execution_time_ms for r in all_results)
+        if all_results
+        else None,
         memory_used_mb=None,
         stderr=last_result.stderr if last_result and last_result.stderr else None,
     )

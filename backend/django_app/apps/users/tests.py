@@ -49,3 +49,59 @@ def test_login_success(client, user_data):
     )
     assert response.status_code == 200
     assert "access" in response.data
+
+
+@pytest.mark.django_db
+def test_register_duplicate_username(client, user_data):
+    client.post("/api/auth/register/", user_data, format="json")
+    user_data["email"] = "other@mail.com"  # другой email но тот же username
+    response = client.post("/api/auth/register/", user_data, format="json")
+    assert response.status_code == 400
+
+
+@pytest.mark.django_db
+def test_register_invalid_email(client, user_data):
+    user_data["email"] = "notanemail"
+    response = client.post("/api/auth/register/", user_data, format="json")
+    assert response.status_code == 400
+
+
+@pytest.mark.django_db
+def test_login_wrong_password(client, user_data):
+    client.post("/api/auth/register/", user_data, format="json")
+    response = client.post(
+        "/api/auth/login/",
+        {"username": "testuser", "password": "wrongpassword"},
+        format="json",
+    )
+    assert response.status_code == 401
+
+
+@pytest.mark.django_db
+def test_login_nonexistent_user(client):
+    response = client.post(
+        "/api/auth/login/",
+        {"username": "nobody", "password": "testpass123"},
+        format="json",
+    )
+    assert response.status_code == 401
+
+
+@pytest.mark.django_db
+def test_register_missing_fields(client):
+    response = client.post("/api/auth/register/", {}, format="json")
+    assert response.status_code == 400
+
+
+@pytest.mark.django_db
+def test_token_refresh(client, user_data):
+    client.post("/api/auth/register/", user_data, format="json")
+    login = client.post(
+        "/api/auth/login/",
+        {"username": "testuser", "password": "testpass123"},
+        format="json",
+    )
+    refresh = login.data["refresh"]
+    response = client.post("/api/auth/token/refresh/", {"refresh": refresh}, format="json")
+    assert response.status_code == 200
+    assert "access" in response.data

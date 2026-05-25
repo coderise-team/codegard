@@ -78,3 +78,21 @@ def test_broadcast_submission_update_no_channel_layer(user, problem):
     with patch("channels.layers.get_channel_layer", return_value=None):
         # Should not raise
         _broadcast_submission_update(submission)
+
+
+@pytest.mark.django_db
+def test_broadcast_verdict_update_skipped_when_verdict_unchanged(user, problem):
+    """No broadcast when verdict did not change between saves."""
+    submission = Submission.objects.create(
+        user=user,
+        problem=problem,
+        code="x=1",
+        language=Submission.Language.PYTHON,
+        verdict=Submission.Verdict.WA,
+    )
+    # Save again with the same verdict — signal should not broadcast
+    with patch(
+        "apps.submissions.signals._broadcast_submission_update"
+    ) as mock_broadcast:
+        submission.save()
+        mock_broadcast.assert_not_called()

@@ -124,7 +124,7 @@ jobs:
         run: uv sync --group dev
 
       - name: Run tests
-        run: uv run pytest --cov=app --cov-report=xml || [ $? -eq 5 ]
+        run: PYTHONPATH=../shared uv run pytest --cov=app --cov-report=xml || [ $? -eq 5 ]
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5

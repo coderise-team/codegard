@@ -26,18 +26,14 @@ async def _assert_rejected_with_code(communicator, expected_code: int) -> None:
 @pytest.fixture
 def user(db, django_user_model):
     return django_user_model.objects.create_user(
-        username="owner",
-        password="pass",
-        email="owner@example.com"
+        username="owner", password="pass", email="owner@example.com"
     )
 
 
 @pytest.fixture
 def other_user(db, django_user_model):
     return django_user_model.objects.create_user(
-        username="other",
-        password="pass",
-        email="owner@example.com"
+        username="other", password="pass", email="owner@example.com"
     )
 
 

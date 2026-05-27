@@ -1,4 +1,5 @@
 import uuid
+
 import pytest
 from apps.problems.models import Problem
 from apps.realtime.routing import websocket_urlpatterns

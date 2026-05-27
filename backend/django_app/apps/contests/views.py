@@ -12,7 +12,9 @@ from .serializers import (
     ContestDetailSerializer,
     ContestSerializer,
     ContestWriteSerializer,
+    LeaderboardEntrySerializer,
 )
+from .services import get_leaderboard
 
 
 class ContestViewSet(viewsets.ModelViewSet):
@@ -120,3 +122,22 @@ class ContestViewSet(viewsets.ModelViewSet):
             {"detail": "Successfully left the contest."},
             status=status.HTTP_200_OK,
         )
+
+    @action(
+        detail=True,
+        methods=["get"],
+        permission_classes=[IsAuthenticatedOrReadOnly],
+    )
+    def leaderboard(self, request, pk=None):
+        """GET /api/contests/{id}/leaderboard/"""
+        contest = self.get_object()
+        entries = get_leaderboard(contest)
+
+        # Inject rank number
+        data = []
+        for rank, entry in enumerate(entries, start=1):
+            entry.rank = rank
+            data.append(entry)
+
+        serializer = LeaderboardEntrySerializer(data, many=True)
+        return Response(serializer.data)

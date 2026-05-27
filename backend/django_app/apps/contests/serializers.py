@@ -1,7 +1,7 @@
 from apps.problems.models import Problem
 from rest_framework import serializers
 
-from .models import Contest
+from .models import Contest, ContestScore
 
 
 class ContestProblemSerializer(serializers.ModelSerializer):
@@ -97,3 +97,26 @@ class ContestWriteSerializer(serializers.ModelSerializer):
                 {"end_time": "end_time must be after start_time."}
             )
         return attrs
+
+
+# LEADERBOARD SERIALIZER
+
+
+class LeaderboardEntrySerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source="user.username", read_only=True)
+    rank = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ContestScore
+        fields = [
+            "rank",
+            "username",
+            "score",
+            "penalty",
+            "solved_count",
+            "last_ac_at",
+        ]
+
+    def get_rank(self, obj):
+        # Rank is injected via annotated queryset in the view
+        return getattr(obj, "rank", None)

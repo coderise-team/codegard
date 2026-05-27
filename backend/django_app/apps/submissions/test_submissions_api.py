@@ -22,12 +22,16 @@ def api_client():
 
 @pytest.fixture
 def user(db, django_user_model):
-    return django_user_model.objects.create_user(username="user", password="pass")
+    return django_user_model.objects.create_user(
+        username="user", email="user@test.com", password="pass"
+    )
 
 
 @pytest.fixture
 def other_user(db, django_user_model):
-    return django_user_model.objects.create_user(username="other", password="pass")
+    return django_user_model.objects.create_user(
+        username="other", email="other@test.com", password="pass"
+    )
 
 
 @pytest.fixture
@@ -118,6 +122,16 @@ class TestSubmissionCreate:
         response = auth_client.post(url, data, format="json")
         assert response.status_code == status.HTTP_201_CREATED
         assert response.data["status"] == "queue_error"
+
+
+@pytest.mark.django_db
+def test_submission_str_includes_pending_and_verdict(submission):
+    # Covers Submission.__str__ branches (Pending vs verdict code).
+    assert "Pending" in str(submission)
+
+    submission.verdict = Submission.Verdict.AC
+    submission.save(update_fields=["verdict"])
+    assert "AC" in str(submission)
 
     def test_unauthenticated_cannot_submit(self, api_client, problem):
         url = reverse("submissions-list")

@@ -6,6 +6,8 @@ dependencies = [
     "boto3>=1.43.7",
     "celery[redis]>=5.5.0",
     "channels>=4.3.2",
+    "channels-redis>=4.3.0",
+    "daphne>=4.2.0",
     "django>=6.0.5",
     "django-environ>=0.13.0",
     "django-storages>=1.14.6",
@@ -15,6 +17,7 @@ dependencies = [
     "pillow>=12.2.0",
     "psycopg2-binary>=2.9.12",
     "pydantic>=2.13.4",
+    "pytest-asyncio>=1.3.0",
     "redis>=6.4.0",
     "sorl-thumbnail>=13.0.0",
     "uvicorn[standard]>=0.46.0",
@@ -31,7 +34,16 @@ dev = [
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "settings.dev"
-pythonpath = ["django_app"]
+pythonpath = ["django_app", "../shared"]
+asyncio_mode = "auto"
+
+[tool.coverage.run]
+omit = [
+    "django_app/config/asgi.py",
+    "django_app/config/wsgi.py",
+    "django_app/manage.py",
+    "django_app/**/migrations/*.py",
+]
 
 [tool.ruff]
 line-length = 88

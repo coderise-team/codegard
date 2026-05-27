@@ -90,6 +90,7 @@ jobs:
           SECRET_KEY: ci-insecure-key
           DATABASE_URL: postgres://postgres:postgres@localhost:5432/codegard
           REDIS_URL: redis://localhost:6379/0
+          CELERY_BROKER_URL: redis://localhost:6379/0
         run: uv run pytest --cov=django_app --cov-report=xml
 
       - name: Upload coverage to Codecov
@@ -123,7 +124,7 @@ jobs:
         run: uv sync --group dev
 
       - name: Run tests
-        run: uv run pytest --cov=app --cov-report=xml || [ $? -eq 5 ]
+        run: PYTHONPATH=../shared uv run pytest --cov=app --cov-report=xml || [ $? -eq 5 ]
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5

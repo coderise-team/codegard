@@ -31,10 +31,10 @@ services:
     build:
       context: ./backend
       target: dev
-    command: python django_app/manage.py runserver 0.0.0.0:8000
+    command: uvicorn config.asgi:application --host 0.0.0.0 --port 8000 --reload --reload-dir django_app
     environment:
       DJANGO_SETTINGS_MODULE: settings.dev
-      PYTHONPATH: /shared
+      PYTHONPATH: /app/django_app:/shared
     volumes:
       - ./shared:/shared
     env_file: .env
@@ -73,6 +73,9 @@ services:
     command: celery -A config worker -l info
     environment:
       DJANGO_SETTINGS_MODULE: settings.dev
+      PYTHONPATH: /app/django_app:/shared
+    volumes:
+      - ./shared:/shared
     env_file: .env
     depends_on:
       postgres:
@@ -98,6 +101,9 @@ services:
     command: celery -A config beat -l info
     environment:
       DJANGO_SETTINGS_MODULE: settings.dev
+      PYTHONPATH: /app/django_app:/shared
+    volumes:
+      - ./shared:/shared
     env_file: .env
     depends_on:
       postgres:
@@ -125,8 +131,10 @@ services:
       - test
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
-      PYTHONPATH: /shared
+      PYTHONPATH: /app/django_app:/shared
+      DJANGO_SETTINGS_MODULE: settings.test
     volumes:
+      - ./backend:/app
       - ./shared:/shared
     env_file: .env
     depends_on:

@@ -21,7 +21,7 @@ def test_avatar_upload_stores_image_and_generates_thumbnails(settings, tmp_path)
     settings.THUMBNAIL_PREFIX = "thumbnails/"
 
     User = get_user_model()
-    user = User.objects.create_user(username="u1", password="pass")
+    user = User.objects.create_user(username="u1", email="u1@test.com", password="pass")
 
     image_bytes = io.BytesIO()
     Image.new("RGB", (400, 400), color=(255, 0, 0)).save(image_bytes, format="PNG")

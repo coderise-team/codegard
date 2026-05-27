@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from django.utils import timezone
 
@@ -61,3 +62,42 @@ class Contest(models.Model):
         if self.status != new_status:
             self.status = new_status
             self.save(update_fields=["status"])
+
+
+class ContestScore(models.Model):
+    """
+    Aggregated score for a user in a contest.
+    Recalculated after every AC submission.
+    """
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="contest_scores",
+    )
+    contest = models.ForeignKey(
+        Contest,
+        on_delete=models.CASCADE,
+        related_name="scores",
+    )
+    score = models.IntegerField(default=0)
+    penalty = models.IntegerField(
+        default=0,
+        help_text="Total penalty in minutes.",
+    )
+    solved_count = models.IntegerField(default=0)
+    last_ac_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Time of last AC submission — used for tiebreaking.",
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ("user", "contest")
+        ordering = ["-score", "penalty", "last_ac_at"]
+
+    def __str__(self):
+        return (
+            f"{self.user} in {self.contest} — score={self.score} penalty={self.penalty}"
+        )

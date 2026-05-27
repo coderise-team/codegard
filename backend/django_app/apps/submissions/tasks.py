@@ -1,8 +1,8 @@
-import json
 import logging
 
 import redis
 from django.conf import settings
+from schemas import ProblemTestCasePayload, SubmissionRequest
 
 logger = logging.getLogger(__name__)
 
@@ -28,18 +28,22 @@ def push_to_judge_queue(submission) -> bool:
     Push a submission to the Redis judge queue.
     Returns True on success, False on failure.
     """
-    payload = {
-        "submission_id": submission.pk,
-        "problem_id": submission.problem_id,
-        "language": submission.language,
-        "code": submission.code,
-        "time_limit": submission.problem.time_limit,
-        "memory_limit": submission.problem.memory_limit,
-    }
+    test_cases = [
+        ProblemTestCasePayload(input=tc.input, expected_output=tc.expected_output)
+        for tc in submission.problem.test_cases.all()
+    ]
+    payload = SubmissionRequest(
+        submission_id=submission.pk,
+        language=submission.language,
+        code=submission.code,
+        time_limit_ms=submission.problem.time_limit,
+        memory_limit_mb=submission.problem.memory_limit,
+        test_cases=test_cases,
+    )
 
     try:
         client = get_redis_client()
-        client.rpush(JUDGE_QUEUE_KEY, json.dumps(payload))
+        client.rpush(JUDGE_QUEUE_KEY, payload.model_dump_json())
         logger.info(f"Submission #{submission.pk} pushed to judge queue.")
         return True
     except redis.RedisError as e:

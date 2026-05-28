@@ -17,12 +17,13 @@ services:
 
   redis:
     image: redis:7-alpine
+    command: redis-server --requirepass ${REDIS_PASSWORD}
     volumes:
       - redis_data:/data
     networks:
       - codegard_net
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 5s
       timeout: 3s
       retries: 5
@@ -191,6 +192,19 @@ services:
     env_file: .env
     networks:
       - codegard_net
+
+  databasus:
+    image: databasus/databasus:latest
+    container_name: databasus
+    ports:
+      - "4005:4005"
+    volumes:
+      - ./data/databasus-data:/databasus-data
+    networks:
+      - codegard_net
+    depends_on:
+      postgres:
+        condition: service_healthy
 
 networks:
   codegard_net:

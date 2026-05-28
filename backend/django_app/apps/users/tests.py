@@ -109,3 +109,53 @@ def test_token_refresh(client, user_data):
     )
     assert response.status_code == 200
     assert "access" in response.data
+
+
+@pytest.mark.django_db
+def test_token_refresh_invalid(client):
+    response = client.post(
+        "/api/auth/token/refresh/",
+        {"refresh": "wrong_refresh"},
+        format="json",
+    )
+    assert response.status_code == 401
+
+
+@pytest.mark.django_db
+def test_logout_success(client, user_data):
+    client.post("/api/auth/register/", user_data, format="json")
+
+    login = client.post(
+        "/api/auth/login/",
+        {"username": "testuser", "password": "testpass123"},
+        format="json",
+    )
+
+    refresh = login.data["refresh"]
+
+    response = client.post(
+        "/api/auth/logout/",
+        {"refresh": refresh},
+        format="json",
+    )
+
+    assert response.status_code == 205
+
+
+@pytest.mark.django_db
+def test_logout_invalid_token(client):
+    response = client.post(
+        "/api/auth/logout/", {"refresh": "wrong_refresh"}, format="json"
+    )
+    assert response.status_code == 400
+
+
+@pytest.mark.django_db
+def test_logout_without_token(client):
+    response = client.post(
+        "/api/auth/logout/",
+        {},
+        format="json",
+    )
+
+    assert response.status_code == 400

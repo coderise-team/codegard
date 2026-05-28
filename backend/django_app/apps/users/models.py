@@ -12,4 +12,7 @@ def user_avatar_upload_to(_instance, filename: str) -> str:
 
 
 class User(AbstractUser):
+    email = models.EmailField(unique=True)
     avatar = models.ImageField(upload_to=user_avatar_upload_to, blank=True, null=True)
+    bio = models.TextField(blank=True, null=True)
+    elo_rating = models.IntegerField(blank=True, null=True)

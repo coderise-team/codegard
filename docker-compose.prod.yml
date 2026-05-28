@@ -37,7 +37,7 @@ services:
     command: gunicorn -k uvicorn.workers.UvicornWorker config.asgi:application --bind 0.0.0.0:8000 --workers 4
     environment:
       DJANGO_SETTINGS_MODULE: settings.prod
-      PYTHONPATH: /shared
+      PYTHONPATH: /app/django_app:/shared
     volumes:
       - ./shared:/shared
     env_file: .env
@@ -55,6 +55,46 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
+
+  celery-worker:
+    build:
+      context: ./backend
+      target: web
+    command: celery -A config worker -l info
+    environment:
+      DJANGO_SETTINGS_MODULE: settings.prod
+      PYTHONPATH: /app/django_app:/shared
+    volumes:
+      - ./shared:/shared
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - codegard_net
+    restart: unless-stopped
+
+  celery-beat:
+    build:
+      context: ./backend
+      target: web
+    command: celery -A config beat -l info
+    environment:
+      DJANGO_SETTINGS_MODULE: settings.prod
+      PYTHONPATH: /app/django_app:/shared
+    volumes:
+      - ./shared:/shared
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - codegard_net
+    restart: unless-stopped
 
   judge:
     build:
@@ -90,20 +130,6 @@ services:
         condition: service_healthy
     networks:
       - codegard_net
-    restart: unless-stopped
-
-  databasus:
-    image: databasus/databasus:latest
-    container_name: databasus
-    ports:
-      - "4005:4005"
-    volumes:
-      - ./data/databasus-data:/databasus-data
-    networks:
-      - codegard_net
-    depends_on:
-      postgres:
-        condition: service_healthy
     restart: unless-stopped
 
 networks:

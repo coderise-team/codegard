@@ -1,5 +1,13 @@
 import pytest
+from apps.contests.models import Contest
+from django.contrib.auth import get_user_model
+from django.test import TestCase
 from rest_framework.test import APIClient
+
+from .models import EloHistory
+from .services import calculate_elo
+
+User = get_user_model()
 
 
 @pytest.fixture
@@ -159,3 +167,56 @@ def test_logout_without_token(client):
     )
 
     assert response.status_code == 400
+
+
+class EloRatingTestCase(TestCase):
+    def setUp(self):
+        self.first_player = User.objects.create(
+            username="qwerty", password="123wehfiew123", elo_ranking=1200
+        )
+        self.second_player = User.objects.create(
+            username="asdfg", password="ioehfuihwe128343", elo_ranking=1200
+        )
+        self.match = Contest.objects.create(
+            title="Match", winner=self.first_player, loser=self.second_player
+        )
+
+    def test_equal_players_match(self):
+        calculate_elo(
+            winner=self.first_player, loser=self.second_player, contest=self.match
+        )
+        self.winner.refresh_from_db()
+        self.loser.refresh_from_db()
+
+        self.assertEqual(self.winner.elo_rating, 1216)
+        self.assertEqual(self.second_player.elo_rating, 1184)
+
+    def test_upset_match(self):
+        self.first_player.elo_rating = 1000
+        self.second_player.elo_rating = 1600
+        self.first_player.save()
+        self.second_player.save()
+
+        calculate_elo(
+            winner=self.first_player, loser=self.second_player, contest=self.contest
+        )
+        self.first_player.refresh_from_db()
+
+        self.assertTrue(self.first_player.elo_rating > 1030)
+
+    def test_history_logging(self):
+        calculate_elo(
+            winner=self.first_player, loser=self.second_player, contest=self.contest
+        )
+
+        self.assertEqual(EloHistory.objects.count(), 2)
+
+        win_hist = EloHistory.objects.get(user=self.first_player)
+        self.assertEqual(win_hist.old_rating, 1200)
+        self.assertEqual(win_hist.new_rating, 1216)
+        self.assertEqual(win_hist.delta, 16)
+
+        loss_hist = EloHistory.objects.get(user=self.second_player)
+        self.assertEqual(loss_hist.old_rating, 1200)
+        self.assertEqual(loss_hist.new_rating, 1984)
+        self.assertEqual(loss_hist.delta, -16)

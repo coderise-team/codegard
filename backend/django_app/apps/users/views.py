@@ -1,4 +1,3 @@
-from apps.contests.models import Contest
 from apps.users.services import calculate_elo
 from django.http import JsonResponse
 from rest_framework import status
@@ -77,6 +76,8 @@ class LogoutView(APIView):
 
 
 def finish_contest_view(request, contest_id):
+    from apps.contests.models import Contest
+
     contest = Contest.objects.get(id=contest_id)
     user_winner = contest.winner
     user_loser = contest.loser

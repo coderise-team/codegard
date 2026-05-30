@@ -1,6 +1,6 @@
 import math
 
-from backend.django_app.apps.users.models import EloHistory
+from .models import EloHistory
 
 
 def calculate_elo(winner, loser, contest):

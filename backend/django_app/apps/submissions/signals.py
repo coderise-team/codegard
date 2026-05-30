@@ -1,4 +1,5 @@
 from apps.contests.services import calculate_score
+from django.db import transaction
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 
@@ -31,8 +32,9 @@ def _recalculate_contest_score_on_ac(
         return
 
     calculate_score(instance.user, instance.contest)
-    _broadcast_problem_solved(instance)
-    _broadcast_leaderboard(instance.contest)
+    contest = instance.contest
+    transaction.on_commit(lambda: _broadcast_problem_solved(instance))
+    transaction.on_commit(lambda: _broadcast_leaderboard(contest))
 
 
 @receiver(post_save, sender=Submission)
@@ -42,7 +44,7 @@ def _broadcast_verdict_update(sender, instance: Submission, **kwargs):
     previous_verdict = getattr(instance, "_previous_verdict", None)
     if previous_verdict == instance.verdict:
         return
-    _broadcast_submission_update(instance)
+    transaction.on_commit(lambda: _broadcast_submission_update(instance))
 
 
 def _broadcast_submission_update(submission: Submission) -> None:

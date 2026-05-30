@@ -11,7 +11,6 @@ class SubmissionConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self):
         user = self.scope["user"]
         if not user.is_authenticated:
-            await self.accept()
             await self.close(code=4001)
             return
 
@@ -20,12 +19,10 @@ class SubmissionConsumer(AsyncJsonWebsocketConsumer):
 
         submission = await self.get_submission()
         if submission is None:
-            await self.accept()
             await self.close(code=4004)
             return
 
         if submission.user_id != user.pk:
-            await self.accept()
             await self.close(code=4003)
             return
 

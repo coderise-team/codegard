@@ -16,7 +16,7 @@ from channels.security.websocket import AllowedHostsOriginValidator
 from django.conf import settings
 from django.core.asgi import get_asgi_application
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings.prod")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings.dev")
 
 django.setup()
 

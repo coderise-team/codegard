@@ -172,10 +172,16 @@ def test_logout_without_token(client):
 class EloRatingTestCase(TestCase):
     def setUp(self):
         self.user1 = User.objects.create(
-            username="qwerty", email="p1@test.com", password="123wehfiew123", elo_rating=1200
+            username="qwerty",
+            email="p1@test.com",
+            password="123wehfiew123",
+            elo_rating=1200,
         )
         self.user2 = User.objects.create(
-            username="asdfg", email="p2@test.com", password="ioehfuihwe128343", elo_rating=1200
+            username="asdfg",
+            email="p2@test.com",
+            password="ioehfuihwe128343",
+            elo_rating=1200,
         )
         self.contest = Contest.objects.create(
             title="Test Match", winner=self.user1, loser=self.user2, status="pending"

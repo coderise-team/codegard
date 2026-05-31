@@ -10,7 +10,7 @@ export default function RegistrationForm() {
         id="username"
         name="username"
         type="Text"
-        placeholder="Example_user"
+        placeholder="Username"
         required
         />
       </div>

@@ -220,3 +220,42 @@ class EloRatingTestCase(TestCase):
         self.assertEqual(loss_hist.old_rating, 1200)
         self.assertEqual(loss_hist.new_rating, 1984)
         self.assertEqual(loss_hist.delta, -16)
+
+    def test_calculate_elo_success(self):
+        self.user1.elo_rating = 1000
+        self.user2.elo_rating = 1000
+
+        self.user1.save()
+        self.user2.save()
+
+        old_winner_rating = self.user1.elo_rating
+        old_loser_rating = self.user2.elo_rating
+
+        calculate_elo(winner=self.user1, loser=self.user2, contest=self.contest)
+
+        self.user1.refresh_from_db()
+        self.user2.refresh_from_db()
+
+        self.assertTrue(self.user1.elo_rating > old_winner_rating)
+        self.assertTrue(self.user2.elo_rating < old_loser_rating)
+
+        from apps.users.models import EloHistory
+
+        history_count = EloHistory.objects.filter(contest=self.contest).count()
+        self.assertEqual(history_count, 2)
+
+        winner_history = EloHistory.objects.filter(user=self.user1, contest=self.contest).first()
+        loser_history = EloHistory.objects.filter(user=self.user2, contest=self.contest).first()
+
+        self.assertIsNotNone(winner_history)
+        self.assertIsNotNone(loser_history)
+
+        self.assertEqual(winner_history.old_rating, old_winner_rating)
+        self.assertEqual(winner_history.new_rating, self.user1.elo_rating)
+        self.assertEqual(winner_history.delta, self.user1.elo_rating - old_winner_rating)
+        self.assertTrue(winner_history.delta > 0)
+
+        self.assertEqual(loser_history.old_rating, old_loser_rating)
+        self.assertEqual(loser_history.new_rating, self.user2.elo_rating)
+        self.assertEqual(loser_history.delta, self.user2.elo_rating - old_loser_rating)
+        self.assertTrue(loser_history.delta < 0)

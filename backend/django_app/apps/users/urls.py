@@ -8,7 +8,7 @@ app_name = "users"
 urlpatterns = [
     path("register/", RegisterView.as_view()),
     path("login/", TokenObtainPairView.as_view()),
-    path("api/auth/token/refresh/", TokenRefreshView.as_view()),
+    path("token/refresh/", TokenRefreshView.as_view()),
+    path("logout/", LogoutView.as_view()),
     path("avatar/", AvatarUploadView.as_view(), name="avatar-upload"),
-    path("api/auth/logout/", LogoutView.as_view()),
 ]

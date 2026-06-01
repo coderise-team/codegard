@@ -53,6 +53,8 @@ class AvatarUploadView(APIView):
 
 
 class LogoutView(APIView):
+    permission_classes = [AllowAny]
+
     def post(self, request):
         try:
             refresh_token = request.data["refresh"]

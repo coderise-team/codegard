@@ -4,8 +4,11 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from rest_framework.test import APIClient
 
+from apps.users.models import User, EloHistory
+from datetime import timedelta
+from django.utils import timezone
 from .models import EloHistory
-from .services import calculate_elo
+from apps.users.services import calculate_elo
 
 User = get_user_model()
 
@@ -171,28 +174,43 @@ def test_logout_without_token(client):
 
 class EloRatingTestCase(TestCase):
     def setUp(self):
-        self.user1 = User.objects.create(
+        self.user1 = User.objects.create_user(
             username="qwerty",
             email="p1@test.com",
             password="123wehfiew123",
             elo_rating=1200,
         )
-        self.user2 = User.objects.create(
+        self.user2 = User.objects.create_user(
             username="asdfg",
             email="p2@test.com",
             password="ioehfuihwe128343",
             elo_rating=1200,
         )
+
+        start = timezone.now()
+        end = start + timedelta(hours=2)
+
         self.contest = Contest.objects.create(
-            title="Test Match", winner=self.user1, loser=self.user2, status="pending"
+            title="Test Match",
+            start_time=start,
+            end_time=end,
+            status="pending"
         )
+
+        self.contest.participants.add(self.user1, self.user2)
+
+        self.first_player = self.user1
+        self.second_player = self.user2
+        self.match = self.contest
+        self.winner = self.user1
+        self.loser = self.user2
 
     def test_equal_players_match(self):
         calculate_elo(
             winner=self.first_player, loser=self.second_player, contest=self.match
         )
         self.winner.refresh_from_db()
-        self.loser.refresh_from_db()
+        self.second_player.refresh_from_db()  # Фиксим: обязательно обновляем из базы!
 
         self.assertEqual(self.winner.elo_rating, 1216)
         self.assertEqual(self.second_player.elo_rating, 1184)
@@ -224,7 +242,7 @@ class EloRatingTestCase(TestCase):
 
         loss_hist = EloHistory.objects.get(user=self.second_player)
         self.assertEqual(loss_hist.old_rating, 1200)
-        self.assertEqual(loss_hist.new_rating, 1984)
+        self.assertEqual(loss_hist.new_rating, 1184)
         self.assertEqual(loss_hist.delta, -16)
 
     def test_calculate_elo_success(self):
@@ -244,8 +262,6 @@ class EloRatingTestCase(TestCase):
 
         self.assertTrue(self.user1.elo_rating > old_winner_rating)
         self.assertTrue(self.user2.elo_rating < old_loser_rating)
-
-        from apps.users.models import EloHistory
 
         history_count = EloHistory.objects.filter(contest=self.contest).count()
         self.assertEqual(history_count, 2)

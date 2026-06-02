@@ -1,3 +1,4 @@
+import json
 from apps.users.services import calculate_elo
 from django.http import JsonResponse
 from rest_framework import status
@@ -7,6 +8,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from sorl.thumbnail import get_thumbnail
+from django.shortcuts import get_object_or_404
+from django.http import JsonResponse
+from apps.contests.models import Contest
+from apps.users.models import User
 
 from .serializers import AvatarUploadSerializer, UserRegisterSerializer
 
@@ -76,11 +81,25 @@ class LogoutView(APIView):
 
 
 def finish_contest_view(request, contest_id):
-    from apps.contests.models import Contest
+    contest = get_object_or_404(Contest, id=contest_id)
 
-    contest = Contest.objects.get(id=contest_id)
-    user_winner = contest.winner
-    user_loser = contest.loser
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            winner_id = data.get("winner_id")
+            loser_id = data.get("loser_id")
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
+    else:
+        winner_id = request.GET.get("winner_id")
+        loser_id = request.GET.get("loser_id")
+
+    if not winner_id or not loser_id:
+        return JsonResponse({"error": "Missing winner_id or loser_id"}, status=400)
+
+    user_winner = get_object_or_404(User, id=winner_id)
+    user_loser = get_object_or_404(User, id=loser_id)
+
     calculate_elo(winner=user_winner, loser=user_loser, contest=contest)
 
     return JsonResponse({"status": "success"})

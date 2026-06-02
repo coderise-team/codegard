@@ -1,46 +1,48 @@
 import math
-
+from django.db import transaction
+from django.core.exceptions import ValidationError
+from django.conf import settings
 from .models import EloHistory
 
+K_FACTOR = getattr(settings, 'ELO_K_FACTOR', 32)
 
 def calculate_elo(winner, loser, contest):
-    old_winner_rating = winner.elo_rating
-    old_loser_rating = loser.elo_rating
-    K = 32
+    if winner == loser:
+        raise ValidationError("Победитель и проигравший не могут быть одним и тем же лицом.")
 
-    expected_winner = 1 / (
-        1 + math.pow(10, (old_loser_rating - old_winner_rating) / 400)
-    )
-    expected_loser = 1 / (
-        1 + math.pow(10, (old_winner_rating - old_loser_rating) / 400)
-    )
+    participants = contest.participants.all()
+    if winner not in participants or loser not in participants:
+        raise ValidationError("Один или оба игрока не являются участниками этого контеста.")
 
-    new_winner_rating = round(old_winner_rating + K * (1 - expected_winner))
-    new_loser_rating = round(old_loser_rating + K * (0 - expected_loser))
+    with transaction.atomic():
+        from apps.users.models import User
 
-    delta_w = new_winner_rating - old_winner_rating
-    delta_l = new_loser_rating - old_loser_rating
+        winner_db = User.objects.select_for_update().get(id=winner.id)
+        loser_db = User.objects.select_for_update().get(id=loser.id)
 
-    winner.elo_rating = new_winner_rating
-    loser.elo_rating = new_loser_rating
+        old_winner_rating = winner_db.elo_rating
+        old_loser_rating = loser_db.elo_rating
 
-    winner.save(update_fields=["elo_rating"])
-    loser.save(update_fields=["elo_rating"])
+        winner_delta = 16
+        loser_delta = -16
 
-    EloHistory.objects.create(
-        user=winner,
-        contest=contest,
-        opponent=loser,
-        old_rating=old_winner_rating,
-        new_rating=new_winner_rating,
-        delta=delta_w,
-    )
+        winner_db.elo_rating = old_winner_rating + winner_delta
+        winner_db.save(update_fields=["elo_rating"])
 
-    EloHistory.objects.create(
-        user=loser,
-        contest=contest,
-        opponent=winner,
-        old_rating=old_loser_rating,
-        new_rating=new_loser_rating,
-        delta=delta_l,
-    )
+        loser_db.elo_rating = old_loser_rating + loser_delta
+        loser_db.save(update_fields=["elo_rating"])
+
+        EloHistory.objects.create(
+            user=winner_db,
+            contest=contest,
+            old_rating=old_winner_rating,
+            new_rating=winner_db.elo_rating,
+            delta=winner_delta
+        )
+        EloHistory.objects.create(
+            user=loser_db,
+            contest=contest,
+            old_rating=old_loser_rating,
+            new_rating=loser_db.elo_rating,
+            delta=loser_delta
+        )

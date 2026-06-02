@@ -1,18 +1,23 @@
-import math
-from django.db import transaction
-from django.core.exceptions import ValidationError
 from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.db import transaction
+
 from .models import EloHistory
 
 K_FACTOR = getattr(settings, 'ELO_K_FACTOR', 32)
 
+
 def calculate_elo(winner, loser, contest):
     if winner == loser:
-        raise ValidationError("Победитель и проигравший не могут быть одним и тем же лицом.")
+        raise ValidationError(
+            "Победитель и проигравший не могут быть одним и тем же лицом."
+        )
 
     participants = contest.participants.all()
     if winner not in participants or loser not in participants:
-        raise ValidationError("Один или оба игрока не являются участниками этого контеста.")
+        raise ValidationError(
+            "Один или оба игрока не являются участниками этого контеста."
+        )
 
     with transaction.atomic():
         from apps.users.models import User

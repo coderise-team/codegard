@@ -1,6 +1,10 @@
 import json
+
+from apps.contests.models import Contest
+from apps.users.models import User
 from apps.users.services import calculate_elo
 from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -8,10 +12,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from sorl.thumbnail import get_thumbnail
-from django.shortcuts import get_object_or_404
-from django.http import JsonResponse
-from apps.contests.models import Contest
-from apps.users.models import User
 
 from .serializers import AvatarUploadSerializer, UserRegisterSerializer
 

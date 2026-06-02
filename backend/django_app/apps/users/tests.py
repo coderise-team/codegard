@@ -190,10 +190,7 @@ class EloRatingTestCase(TestCase):
         end = start + timedelta(hours=2)
 
         self.contest = Contest.objects.create(
-            title="Test Match",
-            start_time=start,
-            end_time=end,
-            status="pending"
+            title="Test Match", start_time=start, end_time=end, status="pending"
         )
 
         self.contest.participants.add(self.user1, self.user2)

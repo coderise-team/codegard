@@ -4,7 +4,7 @@ from django.db import transaction
 
 from .models import EloHistory
 
-K_FACTOR = getattr(settings, 'ELO_K_FACTOR', 32)
+K_FACTOR = getattr(settings, "ELO_K_FACTOR", 32)
 
 
 def calculate_elo(winner, loser, contest):
@@ -42,12 +42,12 @@ def calculate_elo(winner, loser, contest):
             contest=contest,
             old_rating=old_winner_rating,
             new_rating=winner_db.elo_rating,
-            delta=winner_delta
+            delta=winner_delta,
         )
         EloHistory.objects.create(
             user=loser_db,
             contest=contest,
             old_rating=old_loser_rating,
             new_rating=loser_db.elo_rating,
-            delta=loser_delta
+            delta=loser_delta,
         )

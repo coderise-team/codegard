@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
-
 from schemas import (
+    LanguageEnum,
     ProblemTestCasePayload,
     SubmissionRequest,
     SubmissionResponse,
@@ -25,7 +25,12 @@ class TestSubmissionRequest:
     def test_valid(self):
         req = SubmissionRequest(**_valid_request())
         assert req.submission_id == 1
+        assert req.language == LanguageEnum.PYTHON
         assert len(req.test_cases) == 1
+
+    def test_invalid_language_rejected(self):
+        with pytest.raises(ValidationError):
+            SubmissionRequest(**_valid_request(language="cpp"))
 
     def test_missing_required_field(self):
         data = _valid_request()

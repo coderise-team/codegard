@@ -1,18 +1,20 @@
 from django.conf import settings
 from django.db import models
+from schemas.request import LanguageEnum
+from schemas.response import VerdictEnum
 
 
 class Submission(models.Model):
     class Language(models.TextChoices):
-        PYTHON = "python", "Python"
+        PYTHON = LanguageEnum.PYTHON.value, "Python"
 
     class Verdict(models.TextChoices):
-        AC = "AC", "Accepted"
-        WA = "WA", "Wrong Answer"
-        TLE = "TLE", "Time Limit Exceeded"
-        MLE = "MLE", "Memory Limit Exceeded"
-        RE = "RE", "Runtime Error"
-        CE = "CE", "Compilation Error"
+        AC = VerdictEnum.AC.value, "Accepted"
+        WA = VerdictEnum.WA.value, "Wrong Answer"
+        TLE = VerdictEnum.TLE.value, "Time Limit Exceeded"
+        MLE = VerdictEnum.MLE.value, "Memory Limit Exceeded"
+        RE = VerdictEnum.RE.value, "Runtime Error"
+        CE = VerdictEnum.CE.value, "Compilation Error"
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -49,7 +51,7 @@ class Submission(models.Model):
         blank=True,
         help_text="Execution time in milliseconds.",
     )
-    memory_used = models.PositiveIntegerField(
+    memory_used_mb = models.PositiveIntegerField(
         null=True,
         blank=True,
         help_text="Memory used in megabytes.",

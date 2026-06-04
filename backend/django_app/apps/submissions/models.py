@@ -49,7 +49,7 @@ class Submission(models.Model):
         blank=True,
         help_text="Execution time in milliseconds.",
     )
-    memory_used = models.PositiveIntegerField(
+    memory_used_mb = models.PositiveIntegerField(
         null=True,
         blank=True,
         help_text="Memory used in megabytes.",

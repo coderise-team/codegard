@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 import pytest
+from allauth.socialaccount.models import SocialAccount
 from apps.contests.models import Contest
 from apps.users.models import EloHistory
 from apps.users.services import calculate_elo
@@ -29,7 +30,7 @@ def user_data():
 
 @pytest.mark.django_db
 def test_register_success(client, user_data):
-    response = client.post("/api/auth/register/", user_data, format="json")
+    response = client.post("/api/users/register/", user_data, format="json")
     assert response.status_code == 201
     assert "access" in response.data
     assert "refresh" in response.data
@@ -38,22 +39,22 @@ def test_register_success(client, user_data):
 @pytest.mark.django_db
 def test_register_wrong_password(client, user_data):
     user_data["password2"] = "wrongpassword"
-    response = client.post("/api/auth/register/", user_data, format="json")
+    response = client.post("/api/users/register/", user_data, format="json")
     assert response.status_code == 400
 
 
 @pytest.mark.django_db
 def test_register_duplicate_email(client, user_data):
-    client.post("/api/auth/register/", user_data, format="json")
-    response = client.post("/api/auth/register/", user_data, format="json")
+    client.post("/api/users/register/", user_data, format="json")
+    response = client.post("/api/users/register/", user_data, format="json")
     assert response.status_code == 400
 
 
 @pytest.mark.django_db
 def test_login_success(client, user_data):
-    client.post("/api/auth/register/", user_data, format="json")
+    client.post("/api/users/register/", user_data, format="json")
     response = client.post(
-        "/api/auth/login/",
+        "/api/users/login/",
         {"username": "testuser", "password": "testpass123"},
         format="json",
     )
@@ -63,24 +64,24 @@ def test_login_success(client, user_data):
 
 @pytest.mark.django_db
 def test_register_duplicate_username(client, user_data):
-    client.post("/api/auth/register/", user_data, format="json")
+    client.post("/api/users/register/", user_data, format="json")
     user_data["email"] = "other@mail.com"
-    response = client.post("/api/auth/register/", user_data, format="json")
+    response = client.post("/api/users/register/", user_data, format="json")
     assert response.status_code == 400
 
 
 @pytest.mark.django_db
 def test_register_invalid_email(client, user_data):
     user_data["email"] = "notanemail"
-    response = client.post("/api/auth/register/", user_data, format="json")
+    response = client.post("/api/users/register/", user_data, format="json")
     assert response.status_code == 400
 
 
 @pytest.mark.django_db
 def test_login_wrong_password(client, user_data):
-    client.post("/api/auth/register/", user_data, format="json")
+    client.post("/api/users/register/", user_data, format="json")
     response = client.post(
-        "/api/auth/login/",
+        "/api/users/login/",
         {"username": "testuser", "password": "wrongpassword"},
         format="json",
     )
@@ -90,7 +91,7 @@ def test_login_wrong_password(client, user_data):
 @pytest.mark.django_db
 def test_login_nonexistent_user(client):
     response = client.post(
-        "/api/auth/login/",
+        "/api/users/login/",
         {"username": "nobody", "password": "testpass123"},
         format="json",
     )
@@ -99,21 +100,21 @@ def test_login_nonexistent_user(client):
 
 @pytest.mark.django_db
 def test_register_missing_fields(client):
-    response = client.post("/api/auth/register/", {}, format="json")
+    response = client.post("/api/users/register/", {}, format="json")
     assert response.status_code == 400
 
 
 @pytest.mark.django_db
 def test_token_refresh(client, user_data):
-    client.post("/api/auth/register/", user_data, format="json")
+    client.post("/api/users/register/", user_data, format="json")
     login = client.post(
-        "/api/auth/login/",
+        "/api/users/login/",
         {"username": "testuser", "password": "testpass123"},
         format="json",
     )
     refresh = login.data["refresh"]
     response = client.post(
-        "/api/auth/token/refresh/",
+        "/api/users/token/refresh/",
         {"refresh": refresh},
         format="json",
     )
@@ -124,7 +125,7 @@ def test_token_refresh(client, user_data):
 @pytest.mark.django_db
 def test_token_refresh_invalid(client):
     response = client.post(
-        "/api/auth/token/refresh/",
+        "/api/users/token/refresh/",
         {"refresh": "wrong_refresh"},
         format="json",
     )
@@ -133,10 +134,10 @@ def test_token_refresh_invalid(client):
 
 @pytest.mark.django_db
 def test_logout_success(client, user_data):
-    client.post("/api/auth/register/", user_data, format="json")
+    client.post("/api/users/register/", user_data, format="json")
 
     login = client.post(
-        "/api/auth/login/",
+        "/api/users/login/",
         {"username": "testuser", "password": "testpass123"},
         format="json",
     )
@@ -144,7 +145,7 @@ def test_logout_success(client, user_data):
     refresh = login.data["refresh"]
 
     response = client.post(
-        "/api/auth/logout/",
+        "/api/users/logout/",
         {"refresh": refresh},
         format="json",
     )
@@ -155,7 +156,7 @@ def test_logout_success(client, user_data):
 @pytest.mark.django_db
 def test_logout_invalid_token(client):
     response = client.post(
-        "/api/auth/logout/", {"refresh": "wrong_refresh"}, format="json"
+        "/api/users/logout/", {"refresh": "wrong_refresh"}, format="json"
     )
     assert response.status_code == 400
 
@@ -163,12 +164,85 @@ def test_logout_invalid_token(client):
 @pytest.mark.django_db
 def test_logout_without_token(client):
     response = client.post(
-        "/api/auth/logout/",
+        "/api/users/logout/",
         {},
         format="json",
     )
 
     assert response.status_code == 400
+
+
+@pytest.mark.django_db
+def test_github_callback_returns_jwt_for_authenticated_user(client):
+    user = User.objects.create_user(
+        username="github_user",
+        email="github@example.com",
+        password="pass",
+    )
+    client.force_authenticate(user=user)
+
+    response = client.get("/api/users/github/callback/")
+
+    assert response.status_code == 200
+    assert response.data["access"]
+    assert response.data["refresh"]
+    assert response.data["user"] == {
+        "id": user.id,
+        "username": user.username,
+        "email": user.email,
+    }
+
+
+@pytest.mark.django_db
+def test_github_callback_unauthenticated_user(client):
+    response = client.get("/api/users/github/callback/")
+
+    assert response.status_code in [401, 403]
+    assert "access" not in response.data
+    assert "refresh" not in response.data
+
+
+@pytest.mark.django_db
+def test_repeated_github_login_uses_existing_social_account(client):
+    user = User.objects.create_user(
+        username="github_user",
+        email="github@example.com",
+        password="pass",
+    )
+    SocialAccount.objects.create(
+        user=user,
+        provider="github",
+        uid="github-123",
+        extra_data={"login": "github_user"},
+    )
+
+    social_account = SocialAccount.objects.get(provider="github", uid="github-123")
+    client.force_authenticate(user=social_account.user)
+    response = client.get("/api/users/github/callback/")
+
+    assert response.status_code == 200
+    assert User.objects.count() == 1
+    assert response.data["user"]["id"] == user.id
+
+
+@pytest.mark.django_db
+def test_github_user_is_linked_by_social_account_uid():
+    user = User.objects.create_user(
+        username="github_user",
+        email="github@example.com",
+        password="pass",
+    )
+
+    social_account = SocialAccount.objects.create(
+        user=user,
+        provider="github",
+        uid="github-123",
+        extra_data={"login": "github_user"},
+    )
+
+    assert social_account.user == user
+    assert social_account.provider == "github"
+    assert social_account.uid == "github-123"
 
 
 class EloRatingTestCase(TestCase):

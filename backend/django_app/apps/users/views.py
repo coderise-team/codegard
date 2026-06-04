@@ -103,3 +103,22 @@ def finish_contest_view(request, contest_id):
     calculate_elo(winner=user_winner, loser=user_loser, contest=contest)
 
     return JsonResponse({"status": "success"})
+
+
+class GithubOAuthCallbackView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        refresh = RefreshToken.for_user(request.user)
+
+        return Response(
+            {
+                "access": str(refresh.access_token),
+                "refresh": str(refresh),
+                "user": {
+                    "id": request.user.id,
+                    "username": request.user.username,
+                    "email": request.user.email,
+                },
+            }
+        )

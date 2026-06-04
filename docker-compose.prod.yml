@@ -1,3 +1,5 @@
+name: codegard-prod
+
 services:
   postgres:
     image: postgres:16-alpine
@@ -90,6 +92,24 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - codegard_net
+    restart: unless-stopped
+
+  flower:
+    build:
+      context: ./backend
+      target: web
+    command: sh -c "celery -A config flower --port=5555 --url_prefix=flower --basic_auth=$${FLOWER_USER}:$${FLOWER_PASSWORD}"
+    environment:
+      DJANGO_SETTINGS_MODULE: settings.prod
+      PYTHONPATH: /app/django_app:/shared
+    volumes:
+      - ./shared:/shared
+    env_file: .env
+    depends_on:
       redis:
         condition: service_healthy
     networks:

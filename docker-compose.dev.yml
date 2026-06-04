@@ -1,3 +1,5 @@
+name: codegard-dev
+
 services:
   postgres:
     image: postgres:16-alpine
@@ -205,6 +207,25 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+
+  flower:
+    build:
+      context: ./backend
+      target: dev
+    command: sh -c "celery -A config flower --port=5555 --basic_auth=$${FLOWER_USER}:$${FLOWER_PASSWORD}"
+    environment:
+      DJANGO_SETTINGS_MODULE: settings.dev
+      PYTHONPATH: /app/django_app:/shared
+    volumes:
+      - ./shared:/shared
+    env_file: .env
+    ports:
+      - "5555:5555"
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - codegard_net
 
 networks:
   codegard_net:

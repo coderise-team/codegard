@@ -1,3 +1,10 @@
+import json
+
+from apps.contests.models import Contest
+from apps.users.models import User
+from apps.users.services import calculate_elo
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -73,3 +80,28 @@ class LogoutView(APIView):
                 {"error": "Invalid token"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+
+def finish_contest_view(request, contest_id):
+    contest = get_object_or_404(Contest, id=contest_id)
+
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            winner_id = data.get("winner_id")
+            loser_id = data.get("loser_id")
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
+    else:
+        winner_id = request.GET.get("winner_id")
+        loser_id = request.GET.get("loser_id")
+
+    if not winner_id or not loser_id:
+        return JsonResponse({"error": "Missing winner_id or loser_id"}, status=400)
+
+    user_winner = get_object_or_404(User, id=winner_id)
+    user_loser = get_object_or_404(User, id=loser_id)
+
+    calculate_elo(winner=user_winner, loser=user_loser, contest=contest)
+
+    return JsonResponse({"status": "success"})

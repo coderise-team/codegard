@@ -37,6 +37,7 @@ services:
       DJANGO_SETTINGS_MODULE: settings.dev
       PYTHONPATH: /app/django_app:/shared
     volumes:
+      - ./backend/django_app:/app/django_app
       - ./shared:/shared
     env_file: .env
     ports:
@@ -57,8 +58,8 @@ services:
     develop:
       watch:
         - action: sync
-          path: ./backend
-          target: /app
+          path: ./backend/django_app
+          target: /app/django_app
         - action: sync
           path: ./shared
           target: /shared
@@ -76,6 +77,7 @@ services:
       DJANGO_SETTINGS_MODULE: settings.dev
       PYTHONPATH: /app/django_app:/shared
     volumes:
+      - ./backend/django_app:/app/django_app
       - ./shared:/shared
     env_file: .env
     depends_on:
@@ -88,8 +90,8 @@ services:
     develop:
       watch:
         - action: sync
-          path: ./backend
-          target: /app
+          path: ./backend/django_app
+          target: /app/django_app
         - action: rebuild
           path: ./backend/pyproject.toml
         - action: rebuild
@@ -104,6 +106,7 @@ services:
       DJANGO_SETTINGS_MODULE: settings.dev
       PYTHONPATH: /app/django_app:/shared
     volumes:
+      - ./backend/django_app:/app/django_app
       - ./shared:/shared
     env_file: .env
     depends_on:
@@ -116,8 +119,8 @@ services:
     develop:
       watch:
         - action: sync
-          path: ./backend
-          target: /app
+          path: ./backend/django_app
+          target: /app/django_app
         - action: rebuild
           path: ./backend/pyproject.toml
         - action: rebuild

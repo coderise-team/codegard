@@ -6,34 +6,74 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('contests', '0002_contestscore'),
-        ('users', '0001_initial'),
+        ("contests", "0002_contestscore"),
+        ("users", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='user',
-            name='elo_rating',
+            model_name="user",
+            name="elo_rating",
             field=models.IntegerField(default=1200),
         ),
         migrations.CreateModel(
-            name='EloHistory',
+            name="EloHistory",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('old_rating', models.IntegerField(verbose_name='Рейтинг до')),
-                ('new_rating', models.IntegerField(verbose_name='Рейтинг после')),
-                ('delta', models.IntegerField(verbose_name='Изменение рейтинга')),
-                ('timestamp', models.DateTimeField(auto_now_add=True, verbose_name='Дата изменения')),
-                ('contest', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='elo_changes', to='contests.contest', verbose_name='Конкурс')),
-                ('opponent', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='elo_opponent_history', to=settings.AUTH_USER_MODEL, verbose_name='Оппонент')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='elo_history', to=settings.AUTH_USER_MODEL, verbose_name='Пользователь')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("old_rating", models.IntegerField(verbose_name="Рейтинг до")),
+                ("new_rating", models.IntegerField(verbose_name="Рейтинг после")),
+                ("delta", models.IntegerField(verbose_name="Изменение рейтинга")),
+                (
+                    "timestamp",
+                    models.DateTimeField(
+                        auto_now_add=True, verbose_name="Дата изменения"
+                    ),
+                ),
+                (
+                    "contest",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="elo_changes",
+                        to="contests.contest",
+                        verbose_name="Конкурс",
+                    ),
+                ),
+                (
+                    "opponent",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="elo_opponent_history",
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name="Оппонент",
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="elo_history",
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name="Пользователь",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'История ELO',
-                'verbose_name_plural': 'История ELO',
-                'ordering': ['-timestamp'],
+                "verbose_name": "История ELO",
+                "verbose_name_plural": "История ELO",
+                "ordering": ["-timestamp"],
             },
         ),
     ]

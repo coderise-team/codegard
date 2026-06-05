@@ -77,12 +77,18 @@ services:
     networks:
       - codegard_net
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A config inspect ping || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   celery-beat:
     build:
       context: ./backend
       target: web
-    command: celery -A config beat -l info
+    command: celery -A config beat -l info --pidfile=/tmp/celerybeat.pid
     environment:
       DJANGO_SETTINGS_MODULE: settings.prod
       PYTHONPATH: /app/django_app:/shared
@@ -97,6 +103,12 @@ services:
     networks:
       - codegard_net
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "test -f /tmp/celerybeat.pid && kill -0 $$(cat /tmp/celerybeat.pid) || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
 
   flower:
     build:
@@ -115,6 +127,12 @@ services:
     networks:
       - codegard_net
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 5555), timeout=2).close()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
 
   judge:
     build:

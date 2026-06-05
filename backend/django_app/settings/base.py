@@ -107,15 +107,15 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 20,
 }
 
-# Celery (broker URLs, reliability, observability)
-from config.settings.celery import *  # noqa: F403,F401,E402,I001
+# Celery (broker URLs, reliability, observability, beat schedule)
+from .celery_settings import *  # noqa: F403,F401,E402,I001
 
 CELERY_TIMEZONE = TIME_ZONE
 
 # Redis (shared)
 REDIS_URL = env("REDIS_URL", default=CELERY_BROKER_URL)  # noqa: F405
 
-from config.settings.storages import *  # noqa: F403,F401,E402,I001
+from .storages import *  # noqa: F403,F401,E402,I001
 
 
 CHANNEL_LAYERS = {

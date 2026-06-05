@@ -4,26 +4,20 @@ Cloudflare R2 storage configuration via django-storages (S3-compatible).
 This module is imported from settings/base.py to optionally override STORAGES.
 """
 
-import os
+import environ
 
+env = environ.Env()
 
-def _env_bool(name: str, default: bool) -> bool:
-    value = os.environ.get(name)
-    if value is None:
-        return default
-    return value.strip().lower() in {"1", "true", "yes", "on"}
+R2_ACCOUNT_ID = env("R2_ACCOUNT_ID", default="")
+R2_ACCESS_KEY_ID = env("R2_ACCESS_KEY_ID", default="")
+R2_SECRET_ACCESS_KEY = env("R2_SECRET_ACCESS_KEY", default="")
+R2_BUCKET_NAME = env("R2_BUCKET_NAME", default="")
+R2_CUSTOM_DOMAIN = env("R2_CUSTOM_DOMAIN", default="")
 
-
-R2_ACCOUNT_ID = os.environ.get("R2_ACCOUNT_ID", "")
-R2_ACCESS_KEY_ID = os.environ.get("R2_ACCESS_KEY_ID", "")
-R2_SECRET_ACCESS_KEY = os.environ.get("R2_SECRET_ACCESS_KEY", "")
-R2_BUCKET_NAME = os.environ.get("R2_BUCKET_NAME", "")
-R2_CUSTOM_DOMAIN = os.environ.get("R2_CUSTOM_DOMAIN", "")
-
-R2_QUERYSTRING_AUTH = _env_bool(
+R2_QUERYSTRING_AUTH = env.bool(
     "R2_QUERYSTRING_AUTH", default=not bool(R2_CUSTOM_DOMAIN)
 )
-R2_QUERYSTRING_EXPIRE = int(os.environ.get("R2_QUERYSTRING_EXPIRE", "604800"))
+R2_QUERYSTRING_EXPIRE = env.int("R2_QUERYSTRING_EXPIRE", default=604800)
 
 R2_ENABLED = all(
     [R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME]

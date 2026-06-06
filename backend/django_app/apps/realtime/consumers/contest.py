@@ -3,6 +3,7 @@ import logging
 from apps.contests.models import Contest
 from apps.contests.serializers import LeaderboardEntrySerializer
 from apps.contests.services import get_leaderboard
+from apps.realtime.events import ContestEvents
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
@@ -39,12 +40,14 @@ class ContestConsumer(AsyncJsonWebsocketConsumer):
 
         # Send current leaderboard immediately on connect
         leaderboard = await self.build_leaderboard(contest)
-        await self.send_json({"type": "leaderboard_update", "leaderboard": leaderboard})
+        await self.send_json(
+            {"type": ContestEvents.LEADERBOARD_UPDATE, "leaderboard": leaderboard}
+        )
 
         # If the contest has already ended, notify and close.
         ended = await self.is_contest_finished(contest.pk)
         if ended:
-            await self.send_json({"type": "contest_ended"})
+            await self.send_json({"type": ContestEvents.CONTEST_ENDED})
             await self.close()
 
     async def disconnect(self, close_code):
@@ -56,7 +59,7 @@ class ContestConsumer(AsyncJsonWebsocketConsumer):
     async def leaderboard_update(self, event):
         await self.send_json(
             {
-                "type": "leaderboard_update",
+                "type": ContestEvents.LEADERBOARD_UPDATE,
                 "leaderboard": event["leaderboard"],
             }
         )
@@ -64,14 +67,14 @@ class ContestConsumer(AsyncJsonWebsocketConsumer):
     async def problem_solved(self, event):
         await self.send_json(
             {
-                "type": "problem_solved",
+                "type": ContestEvents.PROBLEM_SOLVED,
                 "username": event["username"],
                 "problem_title": event["problem_title"],
             }
         )
 
     async def contest_ended(self, event):
-        await self.send_json({"type": "contest_ended"})
+        await self.send_json({"type": ContestEvents.CONTEST_ENDED})
         await self.close()
 
     # --- DB helpers ---

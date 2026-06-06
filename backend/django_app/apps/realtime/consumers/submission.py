@@ -1,5 +1,6 @@
 import logging
 
+from apps.realtime.events import SubmissionEvents
 from apps.submissions.models import Submission
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
@@ -32,7 +33,7 @@ class SubmissionConsumer(AsyncJsonWebsocketConsumer):
         # Send current status immediately — handles reconnection gracefully
         await self.send_json(
             {
-                "type": "submission_update",
+                "type": SubmissionEvents.SUBMISSION_UPDATE,
                 "submission_id": submission.pk,
                 "verdict": submission.verdict,
             }
@@ -47,7 +48,7 @@ class SubmissionConsumer(AsyncJsonWebsocketConsumer):
     async def submission_update(self, event):
         await self.send_json(
             {
-                "type": "submission_update",
+                "type": SubmissionEvents.SUBMISSION_UPDATE,
                 "submission_id": event["submission_id"],
                 "verdict": event["verdict"],
             }

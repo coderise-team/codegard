@@ -10,13 +10,15 @@ from .models import Contest
 logger = logging.getLogger(__name__)
 
 
-@shared_task
-def update_contest_statuses() -> dict:
+@shared_task(bind=True)
+def update_contest_statuses(self) -> dict:
     """
     Periodic task: update contest statuses based on start/end times.
 
     Returns a small summary dict for logging/inspection.
     """
+
+    logger.info("[update_contest_statuses] started | task_id=%s", self.request.id)
 
     now = timezone.now()
 
@@ -81,6 +83,8 @@ def update_contest_statuses() -> dict:
         summary["delta_since_last_run"],
         summary["total_current"],
     )
+
+    logger.info("[update_contest_statuses] done | task_id=%s", self.request.id)
 
     return summary
 

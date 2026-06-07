@@ -13,8 +13,10 @@ files themselves are removed. The KV-store assertion reliably proves that
 """
 
 import io
+from unittest import mock
 
 import pytest
+from apps.users.signals import _delete_avatar
 from django.contrib.auth import get_user_model
 from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -116,3 +118,37 @@ def test_avatar_and_thumbnails_deleted_on_user_delete(fs_storage):
 
     assert not default_storage.exists(old_avatar)
     assert not _source_has_thumbnail_refs(old_avatar)
+
+
+# --- _delete_avatar edge cases (error handling) ---
+
+
+def test_delete_avatar_noop_for_empty():
+    """Empty avatar -> early return, no storage calls."""
+    with mock.patch(
+        "apps.users.signals.thumbnail_delete"
+    ) as td, mock.patch.object(default_storage, "delete") as sd:
+        _delete_avatar("")
+        _delete_avatar(None)
+    td.assert_not_called()
+    sd.assert_not_called()
+
+
+def test_delete_avatar_swallows_thumbnail_error(caplog):
+    """thumbnail_delete failure is logged, not raised."""
+    with mock.patch(
+        "apps.users.signals.thumbnail_delete", side_effect=RuntimeError("boom")
+    ), mock.patch.object(default_storage, "exists", return_value=False):
+        _delete_avatar("avatars/x.png")  # must not raise
+    assert "Failed to delete thumbnails" in caplog.text
+
+
+def test_delete_avatar_swallows_storage_error(caplog):
+    """default_storage.delete failure is logged, not raised."""
+    with mock.patch("apps.users.signals.thumbnail_delete"), mock.patch.object(
+        default_storage, "exists", return_value=True
+    ), mock.patch.object(
+        default_storage, "delete", side_effect=OSError("disk fail")
+    ):
+        _delete_avatar("avatars/x.png")  # must not raise
+    assert "Failed to delete avatar" in caplog.text

@@ -90,6 +90,7 @@ def update_contest_statuses(self) -> dict:
 
 
 def _broadcast_contest_ended(contest_ids: list[int]) -> None:
+    from apps.realtime.events import ContestEvents
     from asgiref.sync import async_to_sync
     from channels.layers import get_channel_layer
 
@@ -100,5 +101,5 @@ def _broadcast_contest_ended(contest_ids: list[int]) -> None:
     for contest_id in contest_ids:
         async_to_sync(channel_layer.group_send)(
             f"contest_{contest_id}",
-            {"type": "contest_ended"},
+            {"type": ContestEvents.CONTEST_ENDED},
         )

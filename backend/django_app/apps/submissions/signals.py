@@ -1,4 +1,5 @@
 from apps.contests.services import calculate_score
+from apps.realtime.events import ContestEvents, SubmissionEvents
 from django.db import transaction
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
@@ -58,7 +59,7 @@ def _broadcast_submission_update(submission: Submission) -> None:
     async_to_sync(channel_layer.group_send)(
         f"submission_{submission.pk}",
         {
-            "type": "submission_update",
+            "type": SubmissionEvents.SUBMISSION_UPDATE,
             "submission_id": submission.pk,
             "verdict": submission.verdict,
         },
@@ -82,7 +83,7 @@ def _broadcast_leaderboard(contest):
 
     async_to_sync(channel_layer.group_send)(
         f"contest_{contest.pk}",
-        {"type": "leaderboard_update", "leaderboard": data},
+        {"type": ContestEvents.LEADERBOARD_UPDATE, "leaderboard": data},
     )
 
 
@@ -97,7 +98,7 @@ def _broadcast_problem_solved(submission: Submission) -> None:
     async_to_sync(channel_layer.group_send)(
         f"contest_{submission.contest_id}",
         {
-            "type": "problem_solved",
+            "type": ContestEvents.PROBLEM_SOLVED,
             "username": submission.user.username,
             "problem_title": submission.problem.title,
         },

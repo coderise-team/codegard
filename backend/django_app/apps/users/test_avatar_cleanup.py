@@ -125,9 +125,10 @@ def test_avatar_and_thumbnails_deleted_on_user_delete(fs_storage):
 
 def test_delete_avatar_noop_for_empty():
     """Empty avatar -> early return, no storage calls."""
-    with mock.patch(
-        "apps.users.signals.thumbnail_delete"
-    ) as td, mock.patch.object(default_storage, "delete") as sd:
+    with (
+        mock.patch("apps.users.signals.thumbnail_delete") as td,
+        mock.patch.object(default_storage, "delete") as sd,
+    ):
         _delete_avatar("")
         _delete_avatar(None)
     td.assert_not_called()
@@ -136,19 +137,22 @@ def test_delete_avatar_noop_for_empty():
 
 def test_delete_avatar_swallows_thumbnail_error(caplog):
     """thumbnail_delete failure is logged, not raised."""
-    with mock.patch(
-        "apps.users.signals.thumbnail_delete", side_effect=RuntimeError("boom")
-    ), mock.patch.object(default_storage, "exists", return_value=False):
+    with (
+        mock.patch(
+            "apps.users.signals.thumbnail_delete", side_effect=RuntimeError("boom")
+        ),
+        mock.patch.object(default_storage, "exists", return_value=False),
+    ):
         _delete_avatar("avatars/x.png")  # must not raise
     assert "Failed to delete thumbnails" in caplog.text
 
 
 def test_delete_avatar_swallows_storage_error(caplog):
     """default_storage.delete failure is logged, not raised."""
-    with mock.patch("apps.users.signals.thumbnail_delete"), mock.patch.object(
-        default_storage, "exists", return_value=True
-    ), mock.patch.object(
-        default_storage, "delete", side_effect=OSError("disk fail")
+    with (
+        mock.patch("apps.users.signals.thumbnail_delete"),
+        mock.patch.object(default_storage, "exists", return_value=True),
+        mock.patch.object(default_storage, "delete", side_effect=OSError("disk fail")),
     ):
         _delete_avatar("avatars/x.png")  # must not raise
     assert "Failed to delete avatar" in caplog.text

@@ -114,16 +114,15 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 20,
 }
 
-# Celery
-CELERY_BROKER_URL = env("CELERY_BROKER_URL", default="redis://redis:6379/0")
-CELERY_RESULT_BACKEND = env("CELERY_RESULT_BACKEND", default=CELERY_BROKER_URL)
+# Celery (broker URLs, reliability, observability, beat schedule)
+from .celery_settings import *  # noqa: F403,F401,E402,I001
+
 CELERY_TIMEZONE = TIME_ZONE
-CELERY_TASK_ALWAYS_EAGER = env.bool("CELERY_TASK_ALWAYS_EAGER", default=False)
 
 # Redis (shared)
-REDIS_URL = env("REDIS_URL", default=CELERY_BROKER_URL)
+REDIS_URL = env("REDIS_URL", default=CELERY_BROKER_URL)  # noqa: F405
 
-from config.settings.storages import *  # noqa: F403,F401,E402,I001
+from .storages import *  # noqa: F403,F401,E402,I001
 
 
 CHANNEL_LAYERS = {

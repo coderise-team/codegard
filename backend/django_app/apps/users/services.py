@@ -28,8 +28,11 @@ def calculate_elo(winner, loser, contest):
         old_winner_rating = winner_db.elo_rating
         old_loser_rating = loser_db.elo_rating
 
-        winner_delta = 16
-        loser_delta = -16
+        expected_winner = 1 / (1 + 10 ** ((old_loser_rating - old_winner_rating) / 400))
+        expected_loser = 1 - expected_winner
+
+        winner_delta = round(K_FACTOR * (1 - expected_winner))
+        loser_delta = round(K_FACTOR * (0 - expected_loser))
 
         winner_db.elo_rating = old_winner_rating + winner_delta
         winner_db.save(update_fields=["elo_rating"])

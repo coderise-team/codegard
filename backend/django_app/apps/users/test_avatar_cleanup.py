@@ -120,6 +120,43 @@ def test_avatar_and_thumbnails_deleted_on_user_delete(fs_storage):
     assert not _source_has_thumbnail_refs(old_avatar)
 
 
+@pytest.mark.django_db
+def test_save_without_avatar_in_update_fields_skips_lookup(fs_storage):
+    """
+    A save() whose update_fields can't touch the avatar (e.g. an ELO update)
+    must not run the old-avatar SELECT — the guard short-circuits first.
+    """
+    user = _make_user_with_avatar("u_guard")
+
+    User = get_user_model()
+    with mock.patch.object(User.objects, "filter", wraps=User.objects.filter) as filt:
+        user.first_name = "Updated"
+        user.save(update_fields=["first_name"])
+
+    filt.assert_not_called()
+
+
+@pytest.mark.django_db
+def test_failed_save_keeps_old_avatar(fs_storage):
+    """
+    Safety: deletion happens in post_save, so if the save() fails AFTER pre_save
+    (post_save never fires), the old file must stay — the DB row still points to it.
+    """
+    from apps.users.signals import stash_old_avatar_on_change
+
+    user = _make_user_with_avatar("u_fail")
+    old_avatar = user.avatar.name
+    assert default_storage.exists(old_avatar)
+
+    # New avatar assigned, pre_save runs and stashes the old file...
+    user.avatar = _image_file(color=(0, 0, 255))
+    stash_old_avatar_on_change(get_user_model(), user)
+
+    # ...but the DB write fails, so post_save (which deletes) is never called.
+    assert default_storage.exists(old_avatar)  # old file untouched
+    assert getattr(user, "_avatar_to_delete", None)  # still pending deletion
+
+
 # --- _delete_avatar edge cases (error handling) ---
 
 

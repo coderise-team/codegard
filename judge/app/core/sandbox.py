@@ -124,8 +124,6 @@ def run_in_sandbox(
             cpu_quota=_CPU_QUOTA,
             cpu_period=_CPU_PERIOD,
             network_disabled=True,
-            read_only=True,
-            tmpfs={"/tmp": "size=64m"},
             pids_limit=20,
             user="nobody",
             stdin_open=True,

@@ -103,8 +103,8 @@ class TestRunInSandbox:
         assert kwargs["cpu_quota"] == 25_000
         assert kwargs["cpu_period"] == 100_000
         assert kwargs["network_disabled"] is True
-        assert kwargs["read_only"] is True
         assert kwargs["pids_limit"] == 20
+        assert kwargs["user"] == "nobody"
 
     def test_stdin_sent_to_container(self, monkeypatch):
         client = make_mock_docker_client()

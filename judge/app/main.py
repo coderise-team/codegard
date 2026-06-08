@@ -1,6 +1,6 @@
-from fastapi import FastAPI
+from app.app_factory import get_application
 
-app = FastAPI()
+app = get_application()
 
 
 @app.get("/health")

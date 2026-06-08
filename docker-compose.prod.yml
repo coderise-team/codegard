@@ -138,6 +138,7 @@ services:
     build:
       context: ./judge
       target: web
+    entrypoint: []
     command: uvicorn app.main:app --host 0.0.0.0 --port 8001 --workers 2
     environment:
       PYTHONPATH: /shared

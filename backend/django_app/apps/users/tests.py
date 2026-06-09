@@ -137,9 +137,7 @@ def test_logout_success(client, user_data):
     refresh = login.data["refresh"]
     access = login.data["access"]
 
-    client.credentials(
-        HTTP_AUTHORIZATION=f"Bearer {access}"
-    )
+    client.credentials(HTTP_AUTHORIZATION=f"Bearer {access}")
 
     response = client.post(
         "/api/users/logout/",

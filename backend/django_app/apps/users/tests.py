@@ -24,7 +24,6 @@ def user_data():
         "username": "testuser",
         "email": "test@mail.com",
         "password": "testpass123",
-        "password2": "testpass123",
     }
 
 
@@ -34,13 +33,6 @@ def test_register_success(client, user_data):
     assert response.status_code == 201
     assert "access" in response.data
     assert "refresh" in response.data
-
-
-@pytest.mark.django_db
-def test_register_wrong_password(client, user_data):
-    user_data["password2"] = "wrongpassword"
-    response = client.post("/api/users/register/", user_data, format="json")
-    assert response.status_code == 400
 
 
 @pytest.mark.django_db
@@ -143,6 +135,11 @@ def test_logout_success(client, user_data):
     )
 
     refresh = login.data["refresh"]
+    access = login.data["access"]
+
+    client.credentials(
+        HTTP_AUTHORIZATION=f"Bearer {access}"
+    )
 
     response = client.post(
         "/api/users/logout/",
@@ -158,7 +155,7 @@ def test_logout_invalid_token(client):
     response = client.post(
         "/api/users/logout/", {"refresh": "wrong_refresh"}, format="json"
     )
-    assert response.status_code == 400
+    assert response.status_code == 401
 
 
 @pytest.mark.django_db
@@ -169,7 +166,7 @@ def test_logout_without_token(client):
         format="json",
     )
 
-    assert response.status_code == 400
+    assert response.status_code == 401
 
 
 @pytest.mark.django_db

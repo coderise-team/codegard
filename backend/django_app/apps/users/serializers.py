@@ -22,7 +22,6 @@ ALLOWED_CONTENT_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
 
 
 class UserRegisterSerializer(serializers.ModelSerializer):
-    password2 = serializers.CharField(write_only=True)
 
     class Meta:
         model = User

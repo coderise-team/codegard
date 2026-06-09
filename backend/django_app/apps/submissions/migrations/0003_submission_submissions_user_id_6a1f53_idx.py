@@ -5,17 +5,18 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('contests', '0002_contestscore'),
-        ('problems', '0001_initial'),
-        ('submissions', '0002_rename_memory_used_submission_memory_used_mb'),
+        ("contests", "0002_contestscore"),
+        ("problems", "0001_initial"),
+        ("submissions", "0002_rename_memory_used_submission_memory_used_mb"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AddIndex(
-            model_name='submission',
-            index=models.Index(fields=['user', 'created_at'], name='submissions_user_id_6a1f53_idx'),
+            model_name="submission",
+            index=models.Index(
+                fields=["user", "created_at"], name="submissions_user_id_6a1f53_idx"
+            ),
         ),
     ]

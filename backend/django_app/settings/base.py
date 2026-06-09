@@ -1,9 +1,9 @@
 from datetime import timedelta
 from pathlib import Path
+
+import environ
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
-import environ
-
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 

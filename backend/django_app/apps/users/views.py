@@ -11,11 +11,14 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
-from sorl.thumbnail import get_thumbnail
 from rest_framework_simplejwt.views import TokenObtainPairView
-from .serializers import EmailOrUsernameTokenObtainSerializer
+from sorl.thumbnail import get_thumbnail
 
-from .serializers import AvatarUploadSerializer, UserRegisterSerializer
+from .serializers import (
+    AvatarUploadSerializer,
+    EmailOrUsernameTokenObtainSerializer,
+    UserRegisterSerializer,
+)
 
 
 class RegisterView(APIView):

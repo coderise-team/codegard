@@ -1,7 +1,7 @@
 from django.urls import path
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-from .views import AvatarUploadView, GithubOAuthCallbackView, LogoutView, RegisterView
+from .views import AvatarUploadView, GithubOAuthCallbackView, LogoutView, RegisterView, LoginView
 
 app_name = "users"
 
@@ -12,4 +12,5 @@ urlpatterns = [
     path("logout/", LogoutView.as_view()),
     path("avatar/", AvatarUploadView.as_view(), name="avatar-upload"),
     path("github/callback/", GithubOAuthCallbackView.as_view(), name="github-callback"),
+    path("login/", LoginView.as_view()),
 ]

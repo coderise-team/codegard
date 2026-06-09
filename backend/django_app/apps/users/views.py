@@ -12,6 +12,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from sorl.thumbnail import get_thumbnail
+from rest_framework_simplejwt.views import TokenObtainPairView
+from .serializers import EmailOrUsernameTokenObtainSerializer
 
 from .serializers import AvatarUploadSerializer, UserRegisterSerializer
 
@@ -59,13 +61,16 @@ class AvatarUploadView(APIView):
         )
 
 
+class LoginView(TokenObtainPairView):
+    serializer_class = EmailOrUsernameTokenObtainSerializer
+
+
 class LogoutView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         try:
-            refresh_token = request.data["refresh"]
-            token = RefreshToken(refresh_token)
+            token = RefreshToken(request.data["refresh"])
             token.blacklist()
             return Response(status=status.HTTP_205_RESET_CONTENT)
 

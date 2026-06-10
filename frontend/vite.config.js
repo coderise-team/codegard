@@ -4,5 +4,7 @@ import babel from '@rolldown/plugin-babel'
 
 // https://vite.dev/config/
 export default defineConfig({
+  // Single source of truth: load env from the repo root .env, not frontend/.
+  envDir: '..',
   plugins: [react(), babel({ presets: [reactCompilerPreset()] })],
 })

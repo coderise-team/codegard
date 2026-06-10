@@ -60,6 +60,11 @@ class Submission(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+        indexes = [
+            # Speeds up the activity-heatmap query (filter by user + created_at
+            # range, group by day) and any per-user submission lookups.
+            models.Index(fields=["user", "created_at"]),
+        ]
 
     def __str__(self):
         verdict = self.verdict or "Pending"

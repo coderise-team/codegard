@@ -1,10 +1,15 @@
 import json
+from datetime import timedelta
 
 from apps.contests.models import Contest
+from apps.submissions.models import Submission
 from apps.users.models import User
 from apps.users.services import calculate_elo
+from django.db.models import Count
+from django.db.models.functions import TruncDate
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -14,6 +19,8 @@ from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from sorl.thumbnail import get_thumbnail
 
 from .serializers import AvatarUploadSerializer, UserRegisterSerializer
+
+ACTIVITY_WINDOW_DAYS = 365
 
 
 class RegisterView(APIView):
@@ -80,6 +87,33 @@ class LogoutView(APIView):
                 {"error": "Invalid token"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+
+class UserActivityView(APIView):
+    """
+    Per-day submission counts for a user's activity heatmap (GitHub-style).
+
+    GET /api/users/{id}/activity/ -> sparse map of ISO date -> submission count
+    for the last ACTIVITY_WINDOW_DAYS days, e.g. {"2026-05-01": 3, "2026-05-02": 7}.
+
+    Counts ALL submissions regardless of verdict (activity, not achievement).
+    Requires auth (project default); 404 if the user does not exist.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, user_id: int):
+        get_object_or_404(User, pk=user_id)
+        since = timezone.now() - timedelta(days=ACTIVITY_WINDOW_DAYS)
+        rows = (
+            Submission.objects.filter(user_id=user_id, created_at__gte=since)
+            .annotate(day=TruncDate("created_at"))
+            .values("day")
+            .annotate(count=Count("id"))
+        )
+        # Sparse: only days that actually have submissions are returned.
+        data = {row["day"].isoformat(): row["count"] for row in rows}
+        return Response(data)
 
 
 def finish_contest_view(request, contest_id):

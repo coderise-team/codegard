@@ -24,7 +24,7 @@ ALLOWED_CONTENT_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
 class UserRegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["username", "email", "password", "password2"]
+        fields = ["username", "email", "password"]
         extra_kwargs = {"password": {"write_only": True}}
 
     def validate_email(self, value):

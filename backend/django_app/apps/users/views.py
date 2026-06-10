@@ -4,9 +4,14 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
+from rest_framework_simplejwt.views import TokenObtainPairView
 from sorl.thumbnail import get_thumbnail
 
-from .serializers import AvatarUploadSerializer, UserRegisterSerializer
+from .serializers import (
+    AvatarUploadSerializer,
+    EmailOrUsernameTokenObtainSerializer,
+    UserRegisterSerializer,
+)
 
 
 class RegisterView(APIView):
@@ -53,10 +58,11 @@ class AvatarUploadView(APIView):
 
 
 class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request):
         try:
-            refresh_token = request.data["refresh"]
-            token = RefreshToken(refresh_token)
+            token = RefreshToken(request.data["refresh"])
             token.blacklist()
             return Response(status=status.HTTP_205_RESET_CONTENT)
 
@@ -71,3 +77,7 @@ class LogoutView(APIView):
                 {"error": "Invalid token"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+
+class LoginView(TokenObtainPairView):
+    serializer_class = EmailOrUsernameTokenObtainSerializer

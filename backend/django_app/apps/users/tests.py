@@ -1,12 +1,6 @@
-from datetime import timedelta
 
 import pytest
-from apps.contests.models import Contest
-from apps.users.models import EloHistory
-from apps.users.services import calculate_elo
 from django.contrib.auth import get_user_model
-from django.test import TestCase
-from django.utils import timezone
 from rest_framework.test import APIClient
 
 User = get_user_model()

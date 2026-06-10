@@ -62,7 +62,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
             "verdict_display",
             "is_pending",
             "execution_time_ms",
-            "memory_used",
+            "memory_used_mb",
             "created_at",
         ]
         read_only_fields = fields

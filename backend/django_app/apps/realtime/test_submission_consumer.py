@@ -18,11 +18,9 @@ def make_communicator(user, submission_id):
 
 
 async def _assert_rejected_with_code(communicator, expected_code: int) -> None:
-    connected, _ = await communicator.connect()
-    assert connected
-    close_msg = await communicator.receive_output(timeout=1)
-    assert close_msg["type"] == "websocket.close"
-    assert close_msg.get("code") == expected_code
+    connected, close_code = await communicator.connect()
+    assert not connected
+    assert close_code == expected_code
 
 
 @pytest.fixture

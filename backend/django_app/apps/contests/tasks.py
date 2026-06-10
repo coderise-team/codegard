@@ -10,13 +10,15 @@ from .models import Contest
 logger = logging.getLogger(__name__)
 
 
-@shared_task
-def update_contest_statuses() -> dict:
+@shared_task(bind=True)
+def update_contest_statuses(self) -> dict:
     """
     Periodic task: update contest statuses based on start/end times.
 
     Returns a small summary dict for logging/inspection.
     """
+
+    logger.info("[update_contest_statuses] started | task_id=%s", self.request.id)
 
     now = timezone.now()
 
@@ -82,10 +84,13 @@ def update_contest_statuses() -> dict:
         summary["total_current"],
     )
 
+    logger.info("[update_contest_statuses] done | task_id=%s", self.request.id)
+
     return summary
 
 
 def _broadcast_contest_ended(contest_ids: list[int]) -> None:
+    from apps.realtime.events import ContestEvents
     from asgiref.sync import async_to_sync
     from channels.layers import get_channel_layer
 
@@ -96,5 +101,5 @@ def _broadcast_contest_ended(contest_ids: list[int]) -> None:
     for contest_id in contest_ids:
         async_to_sync(channel_layer.group_send)(
             f"contest_{contest_id}",
-            {"type": "contest_ended"},
+            {"type": ContestEvents.CONTEST_ENDED},
         )

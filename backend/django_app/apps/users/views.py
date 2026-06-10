@@ -1,3 +1,15 @@
+import json
+from datetime import timedelta
+
+from apps.contests.models import Contest
+from apps.submissions.models import Submission
+from apps.users.models import User
+from apps.users.services import calculate_elo
+from django.db.models import Count
+from django.db.models.functions import TruncDate
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -12,6 +24,8 @@ from .serializers import (
     EmailOrUsernameTokenObtainSerializer,
     UserRegisterSerializer,
 )
+
+ACTIVITY_WINDOW_DAYS = 365
 
 
 class RegisterView(APIView):

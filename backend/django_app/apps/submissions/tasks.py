@@ -2,7 +2,7 @@ import logging
 
 import redis
 from django.conf import settings
-from schemas import ProblemTestCasePayload, SubmissionRequest
+from schemas.request import ProblemTestCasePayload, SubmissionRequest
 
 logger = logging.getLogger(__name__)
 

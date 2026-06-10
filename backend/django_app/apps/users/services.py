@@ -6,6 +6,27 @@ from .models import EloHistory
 
 K_FACTOR = getattr(settings, "ELO_K_FACTOR", 32)
 
+# Rank tiers by ELO, lower bound inclusive. Highest first for a simple lookup:
+# e.g. elo 1200 -> Junior, 1399 -> Junior, 1400 -> Specialist, 2400+ -> Kernel.
+RANK_THRESHOLDS = [
+    (2400, "Kernel"),
+    (2200, "Architect"),
+    (2000, "Grandmaster"),
+    (1800, "Master"),
+    (1600, "Expert"),
+    (1400, "Specialist"),
+    (1200, "Junior"),
+    (0, "Trainee"),
+]
+
+
+def get_rank(elo: int) -> str:
+    """Map an ELO rating to its rank name (computed on the fly, never stored)."""
+    for threshold, name in RANK_THRESHOLDS:
+        if elo >= threshold:
+            return name
+    return "Trainee"  # fallback for unexpected negative ratings
+
 
 def calculate_elo(winner, loser, contest):
     if winner == loser:

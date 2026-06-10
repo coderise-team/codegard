@@ -6,6 +6,7 @@ from PIL import Image, ImageOps, UnidentifiedImageError
 from rest_framework import serializers
 
 from .models import User
+from .services import get_rank
 
 # Avatar upload constants
 MAX_AVATAR_SIZE_BYTES = 5 * 1024 * 1024
@@ -44,6 +45,19 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         verified_data.pop("password2")
         user = User.objects.create_user(**verified_data)
         return user
+
+
+class UserSerializer(serializers.ModelSerializer):
+    """Public user representation with rank computed on the fly from elo_rating."""
+
+    rank = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ["id", "username", "elo_rating", "rank", "avatar", "bio"]
+
+    def get_rank(self, obj) -> str:
+        return get_rank(obj.elo_rating)
 
 
 class AvatarUploadSerializer(serializers.ModelSerializer):

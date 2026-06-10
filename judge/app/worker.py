@@ -44,7 +44,8 @@ async def handle_one(redis: Redis, raw: str) -> None:
     if attempts > settings.max_attempts:
         logger.error(
             "Submission #%s exceeded %s attempts → dead-letter",
-            request.submission_id, settings.max_attempts,
+            request.submission_id,
+            settings.max_attempts,
         )
         await redis.rpush(settings.judge_dead_key, raw)
         await _finish(redis, raw, _internal_failure(request.submission_id))
@@ -60,12 +61,15 @@ async def handle_one(redis: Redis, raw: str) -> None:
 
 async def recover_orphans(redis: Redis) -> None:
     count = 0
-    while await redis.lmove(
-        settings.judge_processing_key,
-        settings.judge_queue_key,
-        src="LEFT",
-        dest="LEFT",
-    ) is not None:
+    while (
+        await redis.lmove(
+            settings.judge_processing_key,
+            settings.judge_queue_key,
+            src="LEFT",
+            dest="LEFT",
+        )
+        is not None
+    ):
         count += 1
     if count:
         logger.warning("Recovered %s orphaned submission(s) from processing", count)

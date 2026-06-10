@@ -3,7 +3,7 @@ import axios from 'axios';
 const ACCESS_KEY = 'access';
 const REFRESH_KEY = 'refresh';
 
-const baseURL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api';
+const baseURL = import.meta.env.VITE_API_URL;
 
 const AUTH_PATHS = ['users/login/', 'users/register/', 'users/token/refresh/'];
 

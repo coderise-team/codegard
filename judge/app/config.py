@@ -2,9 +2,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(case_sensitive=False, env_file=".env")
+    model_config = SettingsConfigDict(case_sensitive=False)
 
-    redis_url: str = "redis://:somepassword123@redis:6379/0"
+    redis_url: str
 
     judge_queue_key: str = "judge:queue"
     judge_processing_key: str = "judge:processing"

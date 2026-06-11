@@ -16,7 +16,6 @@ async def lifespan(app: FastAPI):
     await recover_orphans(redis)
     task = asyncio.create_task(worker_loop(redis))
     logger.info("Judge worker started")
-    print("Judge worker started")
     try:
         yield
     finally:
@@ -27,7 +26,6 @@ async def lifespan(app: FastAPI):
             pass
         await redis.aclose()
         logger.info("Judge worker stopped")
-        print("Judge worker stopped")
 
 
 def create_app() -> FastAPI:

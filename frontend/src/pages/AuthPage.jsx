@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import './AuthPage.css';
 import { useAuthStore } from '../store/authStore';
 
@@ -134,18 +134,22 @@ function RegisterForm({ onSwitch, onSubmit, loading, error }) {
  */
 export default function AuthPage({ mode = 'login' }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const login = useAuthStore((s) => s.login);
   const register = useAuthStore((s) => s.register);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // Page the user was sent here from (set by PrivateRoute); fall back to home.
+  const from = location.state?.from?.pathname || '/';
+
   const wrap = async (action, data) => {
     setError('');
     setLoading(true);
     try {
       await action(data);
-      navigate('/');
+      navigate(from, { replace: true });
     } catch (e) {
       setError(e?.response?.data?.detail || e?.message || 'Something went wrong');
     } finally {

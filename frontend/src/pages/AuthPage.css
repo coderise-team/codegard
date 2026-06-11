@@ -1,6 +1,6 @@
-/* AuthPage.css — страница входа / регистрации */
+/* AuthPage — login / registration screen */
 
-/* ── Страница ───────────────────────────────────────────────── */
+/* ── Page ───────────────────────────────────────────────────── */
 .auth-page {
   display: flex;
   justify-content: center;
@@ -10,7 +10,7 @@
   font-family: var(--ui);
 }
 
-/* ── Кольцо ─────────────────────────────────────────────────── */
+/* ── Ring ───────────────────────────────────────────────────── */
 .auth-ring {
   position: relative;
   width: 256px;
@@ -41,11 +41,11 @@
   100% { background: var(--border); box-shadow: none; }
 }
 
-/* ── Форма (поверх кольца, фиксированная) ───────────────────── */
+/* ── Form box (over ring, fixed) ────────────────────────────── */
 /*
-  position: absolute — не влияет на размер .auth-ring (256×256),
-  кольцо не двигается при появлении ошибок / смене режима.
-  Вертикальное смещение — translate(-50%, -50%) от центра.
+  position: absolute keeps it out of .auth-ring's box (256×256),
+  so the ring doesn't shift when errors appear / the mode changes.
+  Centered via translate(-50%, -50%).
 */
 .auth-box {
   position: absolute;
@@ -53,14 +53,14 @@
   left: 50%;
   transform: translate(-50%, -50%);
   width: 360px;
-  /* Ограничиваем снизу, чтобы при длинной форме не вылезало за экран */
+  /* Cap height so a tall form doesn't overflow the screen */
   max-height: calc(100vh - 40px);
   overflow-y: auto;
   scrollbar-width: none;
 }
 .auth-box::-webkit-scrollbar { display: none; }
 
-/* ── Форма ──────────────────────────────────────────────────── */
+/* ── Form ───────────────────────────────────────────────────── */
 .auth-form {
   width: 100%;
   padding: 0 40px;
@@ -173,7 +173,6 @@
 .auth-btn:active:not(:disabled) { transform: scale(.98); }
 .auth-btn:disabled { opacity: .65; cursor: not-allowed; }
 
-/* Spinner внутри кнопки */
 .auth-spin {
   display: block;
   width: 16px; height: 16px;

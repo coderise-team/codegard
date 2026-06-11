@@ -3,10 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import './AuthPage.css';
 import { useAuthStore } from '../store/authStore';
 
-/* ── 50 tick-marks кольца ──────────────────────────────────── */
 const TICKS = Array.from({ length: 50 }, (_, i) => i);
 
-/* ── OAuth иконки ──────────────────────────────────────────── */
 function GoogleIcon() {
   return (
     <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
@@ -26,7 +24,6 @@ function GitHubIcon() {
   );
 }
 
-/* ── Floating label input ──────────────────────────────────── */
 function FloatInput({ type = 'text', label, value, onChange, autoComplete }) {
   return (
     <div className="auth-field">
@@ -43,7 +40,6 @@ function FloatInput({ type = 'text', label, value, onChange, autoComplete }) {
   );
 }
 
-/* ── Login form ────────────────────────────────────────────── */
 function LoginForm({ onSwitch, onSubmit, loading, error }) {
   const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
@@ -91,7 +87,6 @@ function LoginForm({ onSwitch, onSubmit, loading, error }) {
   );
 }
 
-/* ── Register form ─────────────────────────────────────────── */
 function RegisterForm({ onSwitch, onSubmit, loading, error }) {
   const [username, setUsername] = useState('');
   const [email,    setEmail]    = useState('');
@@ -137,10 +132,9 @@ function RegisterForm({ onSwitch, onSubmit, loading, error }) {
   );
 }
 
-/* ── AuthPage ──────────────────────────────────────────────── */
 /**
- * AuthPage — страница входа и регистрации.
- * mode — 'login' | 'register'; задаётся роутом (/login, /register).
+ * AuthPage — login / registration screen.
+ * mode — 'login' | 'register'; set by the route (/login, /register).
  */
 export default function AuthPage({ mode = 'login' }) {
   const navigate = useNavigate();
@@ -170,13 +164,11 @@ export default function AuthPage({ mode = 'login' }) {
 
   return (
     <div className="auth-page">
-      {/* Анимированное кольцо */}
       <div className="auth-ring">
         {TICKS.map((i) => (
           <span key={i} style={{ '--i': i }} />
         ))}
 
-        {/* Форма поверх кольца — фиксированная ширина, не двигается */}
         <div className="auth-box">
           {mode === 'login'
             ? <LoginForm    onSwitch={() => navigate('/register')} onSubmit={handleLogin}    loading={loading} error={error} />

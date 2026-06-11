@@ -216,6 +216,9 @@ services:
     env_file: .env
     networks:
       - codegard_net
+    depends_on:
+      redis:
+        condition: service_healthy
 
   databasus:
     image: databasus/databasus:latest

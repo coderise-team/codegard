@@ -202,29 +202,12 @@
 }
 .auth-switch-link:hover { color: var(--gold-hi); }
 
-/* ── Divider ─────────────────────────────────────────────────── */
-.auth-divider {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 14px 0 12px;
-  color: var(--fg3);
-  font-size: .75em;
-}
-.auth-divider::before,
-.auth-divider::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--border);
-}
-
 /* ── OAuth ───────────────────────────────────────────────────── */
 .auth-oauth {
   display: flex;
   justify-content: center;
   gap: 20px;
-  margin-top: 12px;
+  margin-top: 14px;
   padding-bottom: 4px;
 }
 .auth-oauth-btn {

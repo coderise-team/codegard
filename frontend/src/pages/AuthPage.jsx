@@ -73,8 +73,6 @@ function LoginForm({ onSwitch, onSubmit, loading, error }) {
         </button>
       </div>
 
-      <div className="auth-divider"><span>or continue with</span></div>
-
       <div className="auth-oauth">
         <button type="button" className="auth-oauth-btn" title="Continue with Google">
           <GoogleIcon />
@@ -117,8 +115,6 @@ function RegisterForm({ onSwitch, onSubmit, loading, error }) {
           Login
         </button>
       </div>
-
-      <div className="auth-divider"><span>or continue with</span></div>
 
       <div className="auth-oauth">
         <button type="button" className="auth-oauth-btn" title="Continue with Google">

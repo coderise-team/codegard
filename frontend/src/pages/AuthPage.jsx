@@ -140,14 +140,13 @@ function RegisterForm({ onSwitch, onSubmit, loading, error }) {
 /* ── AuthPage ──────────────────────────────────────────────── */
 /**
  * AuthPage — страница входа и регистрации.
- * defaultMode — 'login' | 'register' (по умолчанию 'login').
+ * mode — 'login' | 'register'; задаётся роутом (/login, /register).
  */
-export default function AuthPage({ defaultMode = 'login' }) {
+export default function AuthPage({ mode = 'login' }) {
   const navigate = useNavigate();
   const login = useAuthStore((s) => s.login);
   const register = useAuthStore((s) => s.register);
 
-  const [mode, setMode] = useState(defaultMode);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -169,11 +168,6 @@ export default function AuthPage({ defaultMode = 'login' }) {
     wrap(login, { username: email, password });
   const handleRegister = (data) => wrap(register, data);
 
-  const toggle = () => {
-    setMode((m) => (m === 'login' ? 'register' : 'login'));
-    setError('');
-  };
-
   return (
     <div className="auth-page">
       {/* Анимированное кольцо */}
@@ -185,8 +179,8 @@ export default function AuthPage({ defaultMode = 'login' }) {
         {/* Форма поверх кольца — фиксированная ширина, не двигается */}
         <div className="auth-box">
           {mode === 'login'
-            ? <LoginForm    onSwitch={toggle} onSubmit={handleLogin}    loading={loading} error={error} />
-            : <RegisterForm onSwitch={toggle} onSubmit={handleRegister} loading={loading} error={error} />
+            ? <LoginForm    onSwitch={() => navigate('/register')} onSubmit={handleLogin}    loading={loading} error={error} />
+            : <RegisterForm onSwitch={() => navigate('/login')}    onSubmit={handleRegister} loading={loading} error={error} />
           }
         </div>
       </div>

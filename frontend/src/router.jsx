@@ -5,6 +5,6 @@ import HomePage from './pages/HomePage';
 
 export const router = createBrowserRouter([
   { path: '/', element: <HomePage /> },
-  { path: '/login', element: <AuthPage defaultMode="login" /> },
-  { path: '/register', element: <AuthPage defaultMode="register" /> },
+  { path: '/login', element: <AuthPage key="login" mode="login" /> },
+  { path: '/register', element: <AuthPage key="register" mode="register" /> },
 ]);

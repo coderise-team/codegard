@@ -9,7 +9,9 @@ beforeEach(() => post.mockReset());
 
 describe('auth API', () => {
   it('register posts credentials and returns the response body', async () => {
-    post.mockResolvedValue({ data: { user: { id: 1 }, access: 'a', refresh: 'r' } });
+    post.mockResolvedValue({
+      data: { user: { username: 'u', email: 'e@x.io' }, access: 'a', refresh: 'r' },
+    });
 
     const data = await register({ username: 'u', email: 'e@x.io', password: 'p' });
 
@@ -18,7 +20,11 @@ describe('auth API', () => {
       email: 'e@x.io',
       password: 'p',
     });
-    expect(data).toEqual({ user: { id: 1 }, access: 'a', refresh: 'r' });
+    expect(data).toEqual({
+      user: { username: 'u', email: 'e@x.io' },
+      access: 'a',
+      refresh: 'r',
+    });
   });
 
   it('login posts username/password and returns the body', async () => {

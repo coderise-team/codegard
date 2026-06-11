@@ -38,7 +38,7 @@ describe('authStore', () => {
 
   it('register stores tokens, sets the user and authenticates', async () => {
     authApi.register.mockResolvedValue({
-      user: { id: 1, username: 'u' },
+      user: { username: 'u', email: 'e' },
       access: 'a',
       refresh: 'r',
     });
@@ -46,14 +46,14 @@ describe('authStore', () => {
     await store().register({ username: 'u', email: 'e', password: 'p' });
 
     expect(tokenStorage.set).toHaveBeenCalled();
-    expect(store().user).toEqual({ id: 1, username: 'u' });
+    expect(store().user).toEqual({ username: 'u', email: 'e' });
     expect(store().isAuthenticated).toBe(true);
   });
 
   it('logout calls the API, clears tokens and resets state', async () => {
     tokenStorage.getRefresh.mockReturnValue('r');
     authApi.logout.mockResolvedValue();
-    useAuthStore.setState({ user: { id: 1 }, isAuthenticated: true });
+    useAuthStore.setState({ user: { username: 'u' }, isAuthenticated: true });
 
     await store().logout();
 
@@ -76,7 +76,7 @@ describe('authStore', () => {
   it('logout still clears local state when the server call fails', async () => {
     tokenStorage.getRefresh.mockReturnValue('r');
     authApi.logout.mockRejectedValue(new Error('network'));
-    useAuthStore.setState({ user: { id: 1 }, isAuthenticated: true });
+    useAuthStore.setState({ user: { username: 'u' }, isAuthenticated: true });
 
     await store().logout();
 

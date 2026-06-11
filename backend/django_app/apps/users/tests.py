@@ -29,9 +29,15 @@ def test_register_success(client, user_data):
 
 
 @pytest.mark.django_db
-def test_register_wrong_password(client, user_data):
-    user_data["password2"] = "wrongpassword"
-    response = client.post("/api/users/register/", user_data, format="json")
+def test_register_weak_password(client, user_data):
+    user_data["password"] = "123"
+
+    response = client.post(
+        "/api/users/register/",
+        user_data,
+        format="json",
+    )
+
     assert response.status_code == 400
 
 

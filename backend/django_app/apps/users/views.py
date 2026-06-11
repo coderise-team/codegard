@@ -1,3 +1,11 @@
+from datetime import timedelta
+
+from apps.submissions.models import Submission
+from django.contrib.auth import get_user_model
+from django.db.models import Count
+from django.db.models.functions import TruncDate
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -83,3 +91,28 @@ class LogoutView(APIView):
 
 class LoginView(TokenObtainPairView):
     serializer_class = EmailOrUsernameTokenObtainSerializer
+
+
+class UserActivityView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, user_id):
+        User = get_user_model()
+        get_object_or_404(User, pk=user_id)
+
+        since = timezone.now() - timedelta(days=365)
+
+        activity = (
+            Submission.objects.filter(
+                user_id=user_id,
+                created_at__gte=since,
+            )
+            .annotate(day=TruncDate("created_at"))
+            .values("day")
+            .annotate(count=Count("id"))
+            .order_by("day")
+        )
+
+        data = {row["day"].isoformat(): row["count"] for row in activity}
+
+        return Response(data)

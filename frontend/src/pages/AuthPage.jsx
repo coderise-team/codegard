@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './AuthPage.css';
+import { useAuthStore } from '../store/authStore';
 
 /* ── 50 tick-marks кольца ──────────────────────────────────── */
 const TICKS = Array.from({ length: 50 }, (_, i) => i);
@@ -138,33 +140,39 @@ function RegisterForm({ onSwitch, onSubmit, loading, error }) {
 /* ── AuthPage ──────────────────────────────────────────────── */
 /**
  * AuthPage — страница входа и регистрации.
- *
- * Props:
- *   defaultMode — 'login' | 'register'   (по умолчанию 'login')
- *   onLogin     — ({ email, password }) => void | Promise
- *   onRegister  — ({ handle, email, password }) => void | Promise
+ * defaultMode — 'login' | 'register' (по умолчанию 'login').
  */
-export default function AuthPage({ defaultMode = 'login', onLogin, onRegister }) {
-  const [mode,    setMode]    = useState(defaultMode);
-  const [loading, setLoading] = useState(false);
-  const [error,   setError]   = useState('');
+export default function AuthPage({ defaultMode = 'login' }) {
+  const navigate = useNavigate();
+  const login = useAuthStore((s) => s.login);
+  const register = useAuthStore((s) => s.register);
 
-  const wrap = async (fn, data) => {
+  const [mode, setMode] = useState(defaultMode);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const wrap = async (action, data) => {
     setError('');
     setLoading(true);
     try {
-      await fn?.(data);
+      await action(data);
+      navigate('/');
     } catch (e) {
-      setError(e?.message || 'Something went wrong');
+      setError(e?.response?.data?.detail || e?.message || 'Something went wrong');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleLogin    = (data) => wrap(onLogin,    data);
-  const handleRegister = (data) => wrap(onRegister, data);
+  // Login form has one identity field; backend accepts a username or an email.
+  const handleLogin = ({ email, password }) =>
+    wrap(login, { username: email, password });
+  const handleRegister = (data) => wrap(register, data);
 
-  const toggle = () => { setMode((m) => m === 'login' ? 'register' : 'login'); setError(''); };
+  const toggle = () => {
+    setMode((m) => (m === 'login' ? 'register' : 'login'));
+    setError('');
+  };
 
   return (
     <div className="auth-page">

@@ -99,7 +99,7 @@ class EmailOrUsernameTokenObtainSerializer(TokenObtainPairSerializer):
         login = attrs.get("username", "")
         if "@" in login:
             try:
-                user = User.objects.get(email_iexact=login)
+                user = User.objects.get(email__iexact=login)
                 attrs["username"] = user.username
             except User.DoesNotExist:
                 pass

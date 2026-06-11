@@ -6,6 +6,7 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
+  overflow-x: hidden;
   background: var(--bg);
   font-family: var(--ui);
 }
@@ -19,6 +20,8 @@
   justify-content: center;
   align-items: center;
   flex-shrink: 0;
+  /* Tick-mark scale; lowered on small screens so the ring isn't clipped */
+  --ring-scale: 2.35;
 }
 
 /* 50 tick-marks */
@@ -30,7 +33,7 @@
   background: var(--border);
   border-radius: 6px;
   transform-origin: 128px;
-  transform: scale(2.35) rotate(calc(var(--i) * (360deg / 50)));
+  transform: scale(var(--ring-scale)) rotate(calc(var(--i) * (360deg / 50)));
   animation: cgBlink 4.2s linear infinite;
   animation-delay: calc(var(--i) * (4.2s / 50));
 }
@@ -52,7 +55,8 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 360px;
+  /* Cap at 360px on desktop; shrink with a 16px gutter on narrow screens */
+  width: min(360px, calc(100vw - 32px));
   /* Cap height so a tall form doesn't overflow the screen */
   max-height: calc(100vh - 40px);
   overflow-y: auto;
@@ -225,4 +229,19 @@
   border-color: var(--border-2);
   color: var(--fg);
   background: #1a1e2e;
+}
+
+/* ── Small / short screens: drop the ring (it needs ~600px each way),
+   wrap the form in a card. Covers narrow portrait AND short landscape. ── */
+@media (max-width: 640px), (max-height: 640px) {
+  .auth-ring span { display: none; }
+  .auth-box {
+    width: min(420px, calc(100vw - 32px));
+    padding: 24px 0;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, .45);
+  }
+  .auth-form { padding: 0 24px; }
 }

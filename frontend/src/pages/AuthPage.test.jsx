@@ -44,13 +44,13 @@ describe('AuthPage', () => {
     expect(screen.getByText(/already have an account\?/i)).toBeInTheDocument();
   });
 
-  it('submits login with the email mapped to username, then redirects', async () => {
-    const { container } = renderInRouter(<AuthPage />);
+  it('submits login with the identity mapped to username, then redirects', async () => {
+    renderInRouter(<AuthPage />);
 
-    fireEvent.change(screen.getByRole('textbox'), { target: { value: 'a@b.io' } });
-    fireEvent.change(container.querySelector('input[type="password"]'), {
-      target: { value: 'secret' },
+    fireEvent.change(screen.getByLabelText('Username or email'), {
+      target: { value: 'a@b.io' },
     });
+    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'secret' } });
     fireEvent.click(screen.getByRole('button', { name: 'Login' }));
 
     await waitFor(() =>
@@ -61,12 +61,12 @@ describe('AuthPage', () => {
 
   it('shows a backend error and does not redirect on failed login', async () => {
     login.mockRejectedValue({ response: { data: { detail: 'No active account found' } } });
-    const { container } = renderInRouter(<AuthPage />);
+    renderInRouter(<AuthPage />);
 
-    fireEvent.change(screen.getByRole('textbox'), { target: { value: 'a@b.io' } });
-    fireEvent.change(container.querySelector('input[type="password"]'), {
-      target: { value: 'x' },
+    fireEvent.change(screen.getByLabelText('Username or email'), {
+      target: { value: 'a@b.io' },
     });
+    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'x' } });
     fireEvent.click(screen.getByRole('button', { name: 'Login' }));
 
     expect(await screen.findByText('No active account found')).toBeInTheDocument();

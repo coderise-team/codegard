@@ -9,7 +9,6 @@ from schemas.response import SubmissionResponse, VerdictEnum
 from app.config import get_settings
 from app.core.runner import run_submission
 
-
 logger = logging.getLogger(__name__)
 
 

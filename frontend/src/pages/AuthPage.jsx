@@ -5,6 +5,21 @@ import { useAuthStore } from '../store/authStore';
 
 const TICKS = Array.from({ length: 50 }, (_, i) => i);
 
+/**
+ * Pull a human-readable message out of an API error.
+ * DRF returns field errors as { field: ["msg", ...] } (e.g. register), or a
+ * single { detail: "msg" }; fall back to the network/error message.
+ */
+function getErrorMessage(error) {
+  const data = error?.response?.data;
+  if (data && typeof data === 'object') {
+    if (data.detail) return data.detail;
+    const first = Object.values(data).flat().find(Boolean);
+    if (first) return String(first);
+  }
+  return error?.message || 'Something went wrong';
+}
+
 function GoogleIcon() {
   return (
     <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
@@ -151,7 +166,7 @@ export default function AuthPage({ mode = 'login' }) {
       await action(data);
       navigate(from, { replace: true });
     } catch (e) {
-      setError(e?.response?.data?.detail || e?.message || 'Something went wrong');
+      setError(getErrorMessage(e));
     } finally {
       setLoading(false);
     }

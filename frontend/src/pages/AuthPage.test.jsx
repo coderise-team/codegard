@@ -73,6 +73,20 @@ describe('AuthPage', () => {
     expect(navigate).not.toHaveBeenCalled();
   });
 
+  it('surfaces DRF field errors (no detail) on failed register', async () => {
+    register.mockRejectedValue({
+      response: { data: { username: ['A user with that username already exists.'] } },
+    });
+    renderInRouter(<AuthPage mode="register" />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Create account' }));
+
+    expect(
+      await screen.findByText('A user with that username already exists.'),
+    ).toBeInTheDocument();
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
   it('navigates to /register when the switch link is clicked', () => {
     renderInRouter(<AuthPage />);
 

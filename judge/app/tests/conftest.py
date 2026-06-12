@@ -1,5 +1,8 @@
+import os
 import struct
 from unittest.mock import MagicMock
+
+os.environ.setdefault("REDIS_URL", "redis://localhost:6379/0")
 
 from app.core.sandbox import SandboxResult
 

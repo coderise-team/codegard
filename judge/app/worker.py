@@ -6,8 +6,9 @@ from redis.asyncio import Redis
 from schemas.request import SubmissionRequest
 from schemas.response import SubmissionResponse, VerdictEnum
 
-from app.config import settings
+from app.config import get_settings
 from app.core.runner import run_submission
+
 
 logger = logging.getLogger(__name__)
 
@@ -25,12 +26,14 @@ def _internal_failure(submission_id: int) -> SubmissionResponse:
 
 
 async def _finish(redis: Redis, raw: str, response: SubmissionResponse) -> None:
+    settings = get_settings()
     await redis.rpush(settings.judge_results_key, response.model_dump_json())
     await redis.lrem(settings.judge_processing_key, 1, raw)
     await redis.delete(_attempts_key(response.submission_id))
 
 
 async def handle_one(redis: Redis, raw: str) -> None:
+    settings = get_settings()
     try:
         request = SubmissionRequest.model_validate_json(raw)
     except ValidationError:
@@ -60,6 +63,7 @@ async def handle_one(redis: Redis, raw: str) -> None:
 
 
 async def recover_orphans(redis: Redis) -> None:
+    settings = get_settings()
     count = 0
     while (
         await redis.lmove(
@@ -76,6 +80,7 @@ async def recover_orphans(redis: Redis) -> None:
 
 
 async def worker_loop(redis: Redis) -> None:
+    settings = get_settings()
     while True:
         raw = await redis.blmove(
             settings.judge_queue_key,

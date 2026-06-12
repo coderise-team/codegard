@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useId, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './AuthPage.css';
 import { useAuthStore } from '../store/authStore';
@@ -40,9 +40,11 @@ function GitHubIcon() {
 }
 
 function FloatInput({ type = 'text', label, value, onChange, autoComplete }) {
+  const id = useId();
   return (
     <div className="auth-field">
       <input
+        id={id}
         type={type}
         placeholder=" "
         value={value}
@@ -50,25 +52,25 @@ function FloatInput({ type = 'text', label, value, onChange, autoComplete }) {
         autoComplete={autoComplete}
         required
       />
-      <label>{label}</label>
+      <label htmlFor={id}>{label}</label>
     </div>
   );
 }
 
 function LoginForm({ onSwitch, onSubmit, loading, error }) {
-  const [email,    setEmail]    = useState('');
+  const [usernameOrEmail, setUsernameOrEmail] = useState('');
   const [password, setPassword] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit({ email, password });
+    onSubmit({ usernameOrEmail, password });
   };
 
   return (
     <form className="auth-form" onSubmit={handleSubmit} noValidate>
       <h2 className="auth-title">Login</h2>
 
-      <FloatInput label="Email" type="email" value={email} onChange={setEmail} autoComplete="email" />
+      <FloatInput label="Username or email" type="text" value={usernameOrEmail} onChange={setUsernameOrEmail} autoComplete="username" />
       <FloatInput label="Password" type="password" value={password} onChange={setPassword} autoComplete="current-password" />
 
       <div className="auth-forgot">
@@ -102,7 +104,7 @@ function LoginForm({ onSwitch, onSubmit, loading, error }) {
 
 function RegisterForm({ onSwitch, onSubmit, loading, error }) {
   const [username, setUsername] = useState('');
-  const [email,    setEmail]    = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   const handleSubmit = (e) => {
@@ -173,8 +175,8 @@ export default function AuthPage({ mode = 'login' }) {
   };
 
   // Login form has one identity field; backend accepts a username or an email.
-  const handleLogin = ({ email, password }) =>
-    wrap(login, { username: email, password });
+  const handleLogin = ({ usernameOrEmail, password }) =>
+    wrap(login, { username: usernameOrEmail, password });
   const handleRegister = (data) => wrap(register, data);
 
   return (
@@ -186,8 +188,8 @@ export default function AuthPage({ mode = 'login' }) {
 
         <div className="auth-box">
           {mode === 'login'
-            ? <LoginForm    onSwitch={() => navigate('/register')} onSubmit={handleLogin}    loading={loading} error={error} />
-            : <RegisterForm onSwitch={() => navigate('/login')}    onSubmit={handleRegister} loading={loading} error={error} />
+            ? <LoginForm onSwitch={() => navigate('/register')} onSubmit={handleLogin} loading={loading} error={error} />
+            : <RegisterForm onSwitch={() => navigate('/login')} onSubmit={handleRegister} loading={loading} error={error} />
           }
         </div>
       </div>

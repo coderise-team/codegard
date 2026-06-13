@@ -31,6 +31,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
     def validate_username(self, value):
         if value.lower() in settings.RESERVED_USERNAMES:
             raise serializers.ValidationError("This username is reserved")
+        return value
 
     def validate_email(self, value):
         value = value.lower()

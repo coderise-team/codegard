@@ -135,3 +135,5 @@ CHANNEL_LAYERS = {
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
 ]
+
+RESERVED_USERNAMES = {"me", "login", "register", "logout", "avatar", "token"}

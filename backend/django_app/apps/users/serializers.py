@@ -1,6 +1,7 @@
 import io
 from pathlib import Path
 
+from django.conf import settings
 from django.contrib.auth.password_validation import (
     validate_password as dj_validate_password,
 )
@@ -26,6 +27,10 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         model = User
         fields = ["username", "email", "password"]
         extra_kwargs = {"password": {"write_only": True}}
+
+    def validate_username(self, value):
+        if value.lower() in settings.RESERVED_USERNAMES:
+            raise serializers.ValidationError("This username is reserved")
 
     def validate_email(self, value):
         value = value.lower()
@@ -104,3 +109,9 @@ class EmailOrUsernameTokenObtainSerializer(TokenObtainPairSerializer):
             except User.DoesNotExist:
                 pass
         return super().validate(attrs)
+
+
+class UserMeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["username", "avatar"]

@@ -7,6 +7,7 @@ from django.db.models.functions import TruncDate
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import status
+from rest_framework.generics import RetrieveAPIView
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -18,6 +19,7 @@ from sorl.thumbnail import get_thumbnail
 from .serializers import (
     AvatarUploadSerializer,
     EmailOrUsernameTokenObtainSerializer,
+    UserMeSerializer,
     UserRegisterSerializer,
 )
 
@@ -34,7 +36,6 @@ class RegisterView(APIView):
             refresh = RefreshToken.for_user(user)
             return Response(
                 {
-                    "user": serializer.data,
                     "access": str(refresh.access_token),
                     "refresh": str(refresh),
                 },
@@ -116,3 +117,11 @@ class UserActivityView(APIView):
         data = {row["day"].isoformat(): row["count"] for row in activity}
 
         return Response(data)
+
+
+class MeView(RetrieveAPIView):
+    serializer_class = UserMeSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user

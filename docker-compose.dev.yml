@@ -209,15 +209,11 @@ services:
       - test
     environment:
       PYTHONPATH: /shared
-      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
     volumes:
       - ./shared:/shared
     env_file: .env
     networks:
       - codegard_net
-    depends_on:
-      redis:
-        condition: service_healthy
 
   databasus:
     image: databasus/databasus:latest

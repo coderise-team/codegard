@@ -5,4 +5,8 @@ from app.config import get_settings
 
 def create_redis() -> Redis:
     settings = get_settings()
-    return Redis.from_url(settings.redis_url, decode_responses=True)
+    return Redis.from_url(
+        settings.redis_url,
+        decode_responses=True,
+        socket_timeout=settings.worker_poll_timeout + 5,
+    )

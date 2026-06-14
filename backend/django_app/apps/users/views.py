@@ -122,12 +122,13 @@ class UserActivityView(APIView):
 
 
 class UserDetailView(RetrieveAPIView):
-    """GET /api/users/{id}/ — user profile incl. rank computed from elo_rating."""
+    """GET /api/users/{username}/ — public profile incl. rank from elo_rating."""
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
-    lookup_url_kwarg = "user_id"
+    lookup_field = "username"
+    lookup_url_kwarg = "username"
 
 
 def finish_contest_view(request, contest_id):

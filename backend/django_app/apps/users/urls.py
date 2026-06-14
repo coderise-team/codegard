@@ -19,5 +19,5 @@ urlpatterns = [
     path("avatar/", AvatarUploadView.as_view(), name="avatar-upload"),
     path("<int:user_id>/activity/", UserActivityView.as_view(), name="user-activity"),
     # Keep the bare detail route LAST so it doesn't shadow the more specific ones.
-    path("<int:user_id>/", UserDetailView.as_view(), name="user-detail"),
+    path("<str:username>/", UserDetailView.as_view(), name="user-detail"),
 ]

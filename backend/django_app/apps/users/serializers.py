@@ -54,7 +54,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["id", "username", "elo_rating", "rank", "avatar", "bio"]
+        fields = ["username", "elo_rating", "rank", "avatar", "bio"]
 
     def get_rank(self, obj) -> str:
         return get_rank(obj.elo_rating)

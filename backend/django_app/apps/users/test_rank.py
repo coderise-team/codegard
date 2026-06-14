@@ -55,7 +55,7 @@ def test_user_detail_includes_rank(client, django_user_model):
     user = django_user_model.objects.create_user(
         username="u", email="u@test.com", password="pass", elo_rating=1850
     )
-    resp = client.get(reverse("users:user-detail", args=[user.pk]))
+    resp = client.get(reverse("users:user-detail", args=[user.username]))
     assert resp.status_code == 200
     body = resp.json()
     assert body["elo_rating"] == 1850
@@ -68,13 +68,13 @@ def test_user_detail_default_rating_is_junior(client, django_user_model):
     user = django_user_model.objects.create_user(
         username="new", email="new@test.com", password="pass"
     )
-    resp = client.get(reverse("users:user-detail", args=[user.pk]))
+    resp = client.get(reverse("users:user-detail", args=[user.username]))
     assert resp.json()["rank"] == "Junior"
 
 
 @pytest.mark.django_db
 def test_user_detail_404_for_unknown(client):
-    resp = client.get(reverse("users:user-detail", args=[999999]))
+    resp = client.get(reverse("users:user-detail", args=["nope-no-such-user"]))
     assert resp.status_code == 404
 
 
@@ -83,5 +83,5 @@ def test_user_detail_requires_auth(django_user_model):
     user = django_user_model.objects.create_user(
         username="u", email="u@test.com", password="pass"
     )
-    resp = APIClient().get(reverse("users:user-detail", args=[user.pk]))
+    resp = APIClient().get(reverse("users:user-detail", args=[user.username]))
     assert resp.status_code in (401, 403)

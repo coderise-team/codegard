@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     judge_dead_key: str = "judge:dead"
 
     worker_poll_timeout: int = 5
+    worker_backoff_sec: float = 1.0
     max_attempts: int = 3
     attempts_ttl_sec: int = 3600
 

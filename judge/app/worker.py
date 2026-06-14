@@ -81,16 +81,21 @@ async def recover_orphans(redis: Redis) -> None:
 async def worker_loop(redis: Redis) -> None:
     settings = get_settings()
     while True:
-        raw = await redis.blmove(
-            settings.judge_queue_key,
-            settings.judge_processing_key,
-            settings.worker_poll_timeout,
-            src="LEFT",
-            dest="RIGHT",
-        )
-        if raw is None:
-            continue
         try:
+            raw = await redis.blmove(
+                settings.judge_queue_key,
+                settings.judge_processing_key,
+                settings.worker_poll_timeout,
+                src="LEFT",
+                dest="RIGHT",
+            )
+            if raw is None:
+                continue
             await handle_one(redis, raw)
+        except asyncio.CancelledError:
+            raise
         except Exception:
-            logger.exception("Unexpected error handling submission")
+            logger.exception(
+                "Worker loop error, backing off %ss", settings.worker_backoff_sec
+            )
+            await asyncio.sleep(settings.worker_backoff_sec)

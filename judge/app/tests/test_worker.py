@@ -3,6 +3,7 @@ from unittest.mock import AsyncMock, patch
 from schemas.request import LanguageEnum, SubmissionRequest
 from schemas.response import SubmissionResponse, VerdictEnum
 
+from app.config import Settings
 from app.worker import handle_one, recover_orphans
 
 VALID_RAW = SubmissionRequest(
@@ -73,3 +74,11 @@ async def test_recover_orphans_requeues_until_empty():
     await recover_orphans(redis)
 
     assert redis.lmove.await_count == 3
+
+
+def test_processing_key_is_namespaced_per_worker():
+    a = Settings(redis_url="redis://x", worker_id="worker-a")
+    b = Settings(redis_url="redis://x", worker_id="worker-b")
+
+    assert a.processing_key == "judge:processing:worker-a"
+    assert a.processing_key != b.processing_key

@@ -52,6 +52,10 @@ class EloHistory(models.Model):
         ordering = ["-timestamp"]
         verbose_name = "История ELO"
         verbose_name_plural = "История ELO"
+        indexes = [
+            # Speeds up the elo-history query (filter by user, order by timestamp).
+            models.Index(fields=["user", "timestamp"]),
+        ]
 
     def __str__(self):
         return (

@@ -3,7 +3,7 @@ from datetime import timedelta
 
 from apps.contests.models import Contest
 from apps.submissions.models import Submission
-from apps.users.models import User
+from apps.users.models import EloHistory, User
 from apps.users.services import calculate_elo
 from django.db.models import Count
 from django.db.models.functions import TruncDate
@@ -21,6 +21,7 @@ from sorl.thumbnail import get_thumbnail
 
 from .serializers import (
     AvatarUploadSerializer,
+    EloHistorySerializer,
     UserRegisterSerializer,
     UserSerializer,
 )
@@ -115,10 +116,27 @@ class UserActivityView(APIView):
             .annotate(day=TruncDate("created_at"))
             .values("day")
             .annotate(count=Count("id"))
+            .order_by("day")
         )
         # Sparse: only days that actually have submissions are returned.
         data = {row["day"].isoformat(): row["count"] for row in rows}
         return Response(data)
+
+
+class UserEloHistoryView(APIView):
+    """
+    ELO rating change history for a user, for a Dashboard rating sparkline.
+
+    GET /api/users/{id}/elo-history/ -> list of ELO changes oldest-first
+    (chronological), so the frontend can plot the rating over time directly.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, user_id: int):
+        get_object_or_404(User, pk=user_id)
+        history = EloHistory.objects.filter(user_id=user_id).order_by("timestamp")
+        return Response(EloHistorySerializer(history, many=True).data)
 
 
 class UserDetailView(RetrieveAPIView):

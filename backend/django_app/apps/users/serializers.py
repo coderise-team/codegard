@@ -5,7 +5,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from PIL import Image, ImageOps, UnidentifiedImageError
 from rest_framework import serializers
 
-from .models import User
+from .models import EloHistory, User
 from .services import get_rank
 
 # Avatar upload constants
@@ -58,6 +58,14 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_rank(self, obj) -> str:
         return get_rank(obj.elo_rating)
+
+
+class EloHistorySerializer(serializers.ModelSerializer):
+    """One ELO change entry for the rating-history endpoint (sparkline data)."""
+
+    class Meta:
+        model = EloHistory
+        fields = ["old_rating", "new_rating", "delta", "contest", "timestamp"]
 
 
 class AvatarUploadSerializer(serializers.ModelSerializer):

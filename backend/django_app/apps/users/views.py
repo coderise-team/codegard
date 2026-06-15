@@ -11,6 +11,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import status
+from rest_framework.generics import RetrieveAPIView
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -18,7 +19,11 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from sorl.thumbnail import get_thumbnail
 
-from .serializers import AvatarUploadSerializer, UserRegisterSerializer
+from .serializers import (
+    AvatarUploadSerializer,
+    UserRegisterSerializer,
+    UserSerializer,
+)
 
 ACTIVITY_WINDOW_DAYS = 365
 
@@ -114,6 +119,16 @@ class UserActivityView(APIView):
         # Sparse: only days that actually have submissions are returned.
         data = {row["day"].isoformat(): row["count"] for row in rows}
         return Response(data)
+
+
+class UserDetailView(RetrieveAPIView):
+    """GET /api/users/{username}/ — public profile incl. rank from elo_rating."""
+
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = "username"
+    lookup_url_kwarg = "username"
 
 
 def finish_contest_view(request, contest_id):

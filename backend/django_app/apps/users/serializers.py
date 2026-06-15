@@ -11,6 +11,7 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from .models import User
+from .services import get_rank
 
 # Avatar upload constants
 MAX_AVATAR_SIZE_BYTES = 5 * 1024 * 1024
@@ -45,6 +46,19 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         return User.objects.create_user(**validated_data)
+
+
+class UserSerializer(serializers.ModelSerializer):
+    """Public user representation with rank computed on the fly from elo_rating."""
+
+    rank = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ["username", "elo_rating", "rank", "avatar", "bio"]
+
+    def get_rank(self, obj) -> str:
+        return get_rank(obj.elo_rating)
 
 
 class AvatarUploadSerializer(serializers.ModelSerializer):

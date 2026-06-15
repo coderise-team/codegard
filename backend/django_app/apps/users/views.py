@@ -113,7 +113,6 @@ class UserActivityView(APIView):
 
 
 class UserDetailView(RetrieveAPIView):
-
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]

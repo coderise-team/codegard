@@ -113,7 +113,6 @@ class UserActivityView(APIView):
 
 
 class UserDetailView(RetrieveAPIView):
-    """GET /api/users/{username}/ — public profile incl. rank from elo_rating."""
 
     queryset = User.objects.all()
     serializer_class = UserSerializer

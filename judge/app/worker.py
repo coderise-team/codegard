@@ -27,7 +27,7 @@ def _internal_failure(submission_id: int) -> SubmissionResponse:
 async def _finish(redis: Redis, raw: str, response: SubmissionResponse) -> None:
     settings = get_settings()
     await redis.rpush(settings.judge_results_key, response.model_dump_json())
-    await redis.lrem(settings.judge_processing_key, 1, raw)
+    await redis.lrem(settings.processing_key, 1, raw)
     await redis.delete(_attempts_key(response.submission_id))
 
 
@@ -38,7 +38,7 @@ async def handle_one(redis: Redis, raw: str) -> None:
     except ValidationError:
         logger.exception("Malformed submission payload, dropping: %.200s", raw)
         await redis.rpush(settings.judge_dead_key, raw)
-        await redis.lrem(settings.judge_processing_key, 1, raw)
+        await redis.lrem(settings.processing_key, 1, raw)
         return
 
     attempts = await redis.incr(_attempts_key(request.submission_id))
@@ -66,7 +66,7 @@ async def recover_orphans(redis: Redis) -> None:
     count = 0
     while (
         await redis.lmove(
-            settings.judge_processing_key,
+            settings.processing_key,
             settings.judge_queue_key,
             src="LEFT",
             dest="LEFT",
@@ -84,7 +84,7 @@ async def worker_loop(redis: Redis) -> None:
         try:
             raw = await redis.blmove(
                 settings.judge_queue_key,
-                settings.judge_processing_key,
+                settings.processing_key,
                 settings.worker_poll_timeout,
                 src="LEFT",
                 dest="RIGHT",

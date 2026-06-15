@@ -1,9 +1,12 @@
+import json
 from datetime import timedelta
 
 from apps.submissions.models import Submission
-from django.contrib.auth import get_user_model
+from django.contrib.auth import UserSerializer
+from django.contrib.auth.models import User
 from django.db.models import Count
 from django.db.models.functions import TruncDate
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import status
@@ -16,6 +19,7 @@ from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from rest_framework_simplejwt.views import TokenObtainPairView
 from sorl.thumbnail import get_thumbnail
 
+from ..contests.models import Contest
 from .serializers import (
     AvatarUploadSerializer,
     EmailOrUsernameTokenObtainSerializer,
@@ -97,26 +101,43 @@ class LoginView(TokenObtainPairView):
 class UserActivityView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, user_id):
-        User = get_user_model()
+    def get(self, request, user_id: int):
         get_object_or_404(User, pk=user_id)
-
-        since = timezone.now() - timedelta(days=365)
-
-        activity = (
-            Submission.objects.filter(
-                user_id=user_id,
-                created_at__gte=since,
-            )
+        since = timezone.now() - timedelta(days=ACTIVITY_WINDOW_DAYS)
+        (
+            Submission.objects.filter(user_id=user_id, created_at__gte=since)
             .annotate(day=TruncDate("created_at"))
             .values("day")
             .annotate(count=Count("id"))
-            .order_by("day")
         )
 
-        data = {row["day"].isoformat(): row["count"] for row in activity}
 
-        return Response(data)
+class UserDetailView(RetrieveAPIView):
+    """GET /api/users/{username}/ — public profile incl. rank from elo_rating."""
+
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = "username"
+    lookup_url_kwarg = "username"
+
+
+def finish_contest_view(request, contest_id):
+    get_object_or_404(Contest, id=contest_id)
+
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            winner_id = data.get("winner_id")
+            loser_id = data.get("loser_id")
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
+    else:
+        winner_id = request.GET.get("winner_id")
+        loser_id = request.GET.get("loser_id")
+
+    if not winner_id or not loser_id:
+        return JsonResponse({"error": "Missing winner_id or loser_id"}, status=400)
 
 
 class MeView(RetrieveAPIView):

@@ -116,7 +116,32 @@ class UserActivityView(APIView):
 
         data = {row["day"].isoformat(): row["count"] for row in activity}
 
-        return Response(data)
+class UserDetailView(RetrieveAPIView):
+    """GET /api/users/{username}/ — public profile incl. rank from elo_rating."""
+
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = "username"
+    lookup_url_kwarg = "username"
+
+
+def finish_contest_view(request, contest_id):
+    contest = get_object_or_404(Contest, id=contest_id)
+
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            winner_id = data.get("winner_id")
+            loser_id = data.get("loser_id")
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
+    else:
+        winner_id = request.GET.get("winner_id")
+        loser_id = request.GET.get("loser_id")
+
+    if not winner_id or not loser_id:
+        return JsonResponse({"error": "Missing winner_id or loser_id"}, status=400)
 
 
 class MeView(RetrieveAPIView):

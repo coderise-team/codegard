@@ -2,8 +2,9 @@ import json
 from datetime import timedelta
 
 from apps.submissions.models import Submission
-from django.contrib.auth import UserSerializer
-from django.contrib.auth.models import User
+from apps.users.models import User
+from apps.users.serializers import UserSerializer
+from apps.users.services import calculate_elo
 from django.db.models import Count
 from django.db.models.functions import TruncDate
 from django.http import JsonResponse
@@ -104,15 +105,20 @@ class UserActivityView(APIView):
     def get(self, request, user_id: int):
         get_object_or_404(User, pk=user_id)
         since = timezone.now() - timedelta(days=ACTIVITY_WINDOW_DAYS)
-        (
+        rows = (
             Submission.objects.filter(user_id=user_id, created_at__gte=since)
             .annotate(day=TruncDate("created_at"))
             .values("day")
             .annotate(count=Count("id"))
         )
+        # Sparse: only days that actually have submissions are returned.
+        data = {row["day"].isoformat(): row["count"] for row in rows}
+        return Response(data)
 
 
 class UserDetailView(RetrieveAPIView):
+    """GET /api/users/{username}/ — public profile incl. rank from elo_rating."""
+
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
@@ -121,7 +127,7 @@ class UserDetailView(RetrieveAPIView):
 
 
 def finish_contest_view(request, contest_id):
-    get_object_or_404(Contest, id=contest_id)
+    contest = get_object_or_404(Contest, id=contest_id)
 
     if request.method == "POST":
         try:
@@ -136,6 +142,13 @@ def finish_contest_view(request, contest_id):
 
     if not winner_id or not loser_id:
         return JsonResponse({"error": "Missing winner_id or loser_id"}, status=400)
+
+    user_winner = get_object_or_404(User, id=winner_id)
+    user_loser = get_object_or_404(User, id=loser_id)
+
+    calculate_elo(winner=user_winner, loser=user_loser, contest=contest)
+
+    return JsonResponse({"status": "success"})
 
 
 class MeView(RetrieveAPIView):

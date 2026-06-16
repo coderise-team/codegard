@@ -65,7 +65,7 @@ class EloHistorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = EloHistory
-        fields = ["old_rating", "new_rating", "delta", "contest", "timestamp"]
+        fields = ["rating", "created_at"]
 
 
 class AvatarUploadSerializer(serializers.ModelSerializer):

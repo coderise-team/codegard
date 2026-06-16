@@ -63,15 +63,9 @@ def calculate_elo(winner, loser, contest):
 
         EloHistory.objects.create(
             user=winner_db,
-            contest=contest,
-            old_rating=old_winner_rating,
-            new_rating=winner_db.elo_rating,
-            delta=winner_delta,
+            rating=winner_db.elo_rating,
         )
         EloHistory.objects.create(
             user=loser_db,
-            contest=contest,
-            old_rating=old_loser_rating,
-            new_rating=loser_db.elo_rating,
-            delta=loser_delta,
+            rating=loser_db.elo_rating,
         )

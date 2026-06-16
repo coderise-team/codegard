@@ -127,15 +127,15 @@ class UserEloHistoryView(APIView):
     """
     ELO rating change history for a user, for a Dashboard rating sparkline.
 
-    GET /api/users/{id}/elo-history/ -> list of ELO changes oldest-first
+    GET /api/users/{username}/elo-history/ -> list of ELO changes oldest-first
     (chronological), so the frontend can plot the rating over time directly.
     """
 
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, user_id: int):
-        get_object_or_404(User, pk=user_id)
-        history = EloHistory.objects.filter(user_id=user_id).order_by("timestamp")
+    def get(self, request, username: str):
+        user = get_object_or_404(User, username=username)
+        history = EloHistory.objects.filter(user=user).order_by("created_at")
         return Response(EloHistorySerializer(history, many=True).data)
 
 

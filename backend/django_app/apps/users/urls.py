@@ -20,7 +20,7 @@ urlpatterns = [
     path("avatar/", AvatarUploadView.as_view(), name="avatar-upload"),
     path("<int:user_id>/activity/", UserActivityView.as_view(), name="user-activity"),
     path(
-        "<int:user_id>/elo-history/",
+        "<str:username>/elo-history/",
         UserEloHistoryView.as_view(),
         name="user-elo-history",
     ),

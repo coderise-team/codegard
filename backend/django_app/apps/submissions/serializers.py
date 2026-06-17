@@ -63,6 +63,8 @@ class SubmissionSerializer(serializers.ModelSerializer):
             "is_pending",
             "execution_time_ms",
             "memory_used_mb",
+            "stderr",
+            "error_message",
             "created_at",
         ]
         read_only_fields = fields

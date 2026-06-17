@@ -5,17 +5,13 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("users", "0003_elohistory_users_elohi_user_id_7b585f_idx"),
+        ("users", "0002_alter_user_elo_rating_elohistory"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
             name="elohistory",
             options={"ordering": ["-created_at"]},
-        ),
-        migrations.RemoveIndex(
-            model_name="elohistory",
-            name="users_elohi_user_id_7b585f_idx",
         ),
         migrations.RenameField(
             model_name="elohistory",

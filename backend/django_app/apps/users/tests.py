@@ -23,7 +23,6 @@ def user_data():
         "username": "testuser",
         "email": "test@mail.com",
         "password": "testpass123",
-        "password2": "testpass123",
     }
 
 

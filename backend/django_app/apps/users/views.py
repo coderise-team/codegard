@@ -18,9 +18,10 @@ from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from rest_framework_simplejwt.views import TokenObtainPairView
 from sorl.thumbnail import get_thumbnail
 
-from .models import User
+from .models import EloHistory, User
 from .serializers import (
     AvatarUploadSerializer,
+    EloHistorySerializer,
     EmailOrUsernameTokenObtainSerializer,
     UserMeSerializer,
     UserRegisterSerializer,
@@ -110,10 +111,27 @@ class UserActivityView(APIView):
             .annotate(day=TruncDate("created_at"))
             .values("day")
             .annotate(count=Count("id"))
+            .order_by("day")
         )
         # Sparse: only days that actually have submissions are returned.
         data = {row["day"].isoformat(): row["count"] for row in rows}
         return Response(data)
+
+
+class UserEloHistoryView(APIView):
+    """
+    ELO rating change history for a user, for a Dashboard rating sparkline.
+
+    GET /api/users/{username}/elo-history/ -> list of ELO changes oldest-first
+    (chronological), so the frontend can plot the rating over time directly.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, username: str):
+        user = get_object_or_404(User, username=username)
+        history = EloHistory.objects.filter(user=user).order_by("created_at")
+        return Response(EloHistorySerializer(history, many=True).data)
 
 
 class UserDetailView(RetrieveAPIView):

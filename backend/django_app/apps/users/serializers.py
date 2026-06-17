@@ -10,7 +10,7 @@ from PIL import Image, ImageOps, UnidentifiedImageError
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-from .models import User
+from .models import EloHistory, User
 from .services import get_rank
 
 # Avatar upload constants
@@ -59,6 +59,14 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_rank(self, obj) -> str:
         return get_rank(obj.elo_rating)
+
+
+class EloHistorySerializer(serializers.ModelSerializer):
+    """One ELO change entry for the rating-history endpoint (sparkline data)."""
+
+    class Meta:
+        model = EloHistory
+        fields = ["rating", "created_at"]
 
 
 class AvatarUploadSerializer(serializers.ModelSerializer):

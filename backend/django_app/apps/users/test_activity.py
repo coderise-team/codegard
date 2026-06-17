@@ -121,3 +121,14 @@ def test_only_target_users_submissions(client, user, problem, django_user_model)
 
     resp = client.get(reverse("users:user-activity", args=[user.pk]))
     assert sum(resp.json().values()) == 1  # only `user`'s submission counted
+
+
+@pytest.mark.django_db
+def test_same_day_different_times_grouped_as_one(client, user, problem):
+    from datetime import timedelta
+
+    day = timezone.now().replace(hour=9, minute=0, second=0, microsecond=0)
+    _make_submission(user, problem, created_at=day)
+    _make_submission(user, problem, created_at=day + timedelta(hours=8))
+    resp = client.get(reverse("users:user-activity", args=[user.pk]))
+    assert resp.json() == {day.date().isoformat(): 2}

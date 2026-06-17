@@ -162,24 +162,39 @@ def test_logout_success(client, user_data):
 
 
 @pytest.mark.django_db
-def test_logout_invalid_token(client):
+def test_logout_invalid_token(client, user_data):
+    client.post("/api/users/register/", user_data, format="json")
+    login = client.post(
+        "/api/users/login/",
+        {"username": "testuser", "password": "testpass123"},
+        format="json",
+    )
+    client.credentials(HTTP_AUTHORIZATION=f"Bearer {login.data['access']}")
+
     response = client.post(
         "/api/users/logout/",
         {"refresh": "wrong_refresh"},
         format="json",
     )
-    assert response.status_code == 401
+    assert response.status_code == 400
 
 
 @pytest.mark.django_db
-def test_logout_without_token(client):
+def test_logout_without_token(client, user_data):
+    client.post("/api/users/register/", user_data, format="json")
+    login = client.post(
+        "/api/users/login/",
+        {"username": "testuser", "password": "testpass123"},
+        format="json",
+    )
+    client.credentials(HTTP_AUTHORIZATION=f"Bearer {login.data['access']}")
+
     response = client.post(
         "/api/users/logout/",
         {},
         format="json",
     )
-
-    assert response.status_code == 401
+    assert response.status_code == 400
 
 
 class EloRatingTestCase(TestCase):

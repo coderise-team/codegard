@@ -7,6 +7,7 @@ from .views import (
     RegisterView,
     UserActivityView,
     UserDetailView,
+    UserEloHistoryView,
 )
 
 app_name = "users"
@@ -18,6 +19,11 @@ urlpatterns = [
     path("logout/", LogoutView.as_view()),
     path("avatar/", AvatarUploadView.as_view(), name="avatar-upload"),
     path("<int:user_id>/activity/", UserActivityView.as_view(), name="user-activity"),
+    path(
+        "<str:username>/elo-history/",
+        UserEloHistoryView.as_view(),
+        name="user-elo-history",
+    ),
     # Keep the bare detail route LAST so it doesn't shadow the more specific ones.
     path("<str:username>/", UserDetailView.as_view(), name="user-detail"),
 ]

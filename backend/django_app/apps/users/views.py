@@ -3,8 +3,6 @@ from datetime import timedelta
 
 from apps.contests.models import Contest
 from apps.submissions.models import Submission
-from apps.users.models import User
-from apps.users.services import calculate_elo
 from django.db.models import Count
 from django.db.models.functions import TruncDate
 from django.http import JsonResponse
@@ -20,6 +18,7 @@ from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from rest_framework_simplejwt.views import TokenObtainPairView
 from sorl.thumbnail import get_thumbnail
 
+from .models import User
 from .serializers import (
     AvatarUploadSerializer,
     EmailOrUsernameTokenObtainSerializer,
@@ -27,6 +26,7 @@ from .serializers import (
     UserRegisterSerializer,
     UserSerializer,
 )
+from .services import calculate_elo
 
 ACTIVITY_WINDOW_DAYS = 365
 

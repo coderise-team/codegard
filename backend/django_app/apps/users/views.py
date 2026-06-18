@@ -3,8 +3,6 @@ from datetime import timedelta
 
 from apps.contests.models import Contest
 from apps.submissions.models import Submission
-from apps.users.models import EloHistory, User
-from apps.users.services import calculate_elo
 from django.db.models import Count
 from django.db.models.functions import TruncDate
 from django.http import JsonResponse
@@ -17,19 +15,27 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
+from rest_framework_simplejwt.views import TokenObtainPairView
 from sorl.thumbnail import get_thumbnail
 
+from .models import EloHistory, User
 from .serializers import (
     AvatarUploadSerializer,
     EloHistorySerializer,
+    EmailOrUsernameTokenObtainSerializer,
+    UserMeSerializer,
     UserRegisterSerializer,
     UserSerializer,
 )
+from .services import calculate_elo
 
+# Number of days included in a user's submission activity timeline.
 ACTIVITY_WINDOW_DAYS = 365
 
 
 class RegisterView(APIView):
+    """Register a new user and immediately issue JWT tokens."""
+
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -39,7 +45,6 @@ class RegisterView(APIView):
             refresh = RefreshToken.for_user(user)
             return Response(
                 {
-                    "user": serializer.data,
                     "access": str(refresh.access_token),
                     "refresh": str(refresh),
                 },
@@ -73,12 +78,13 @@ class AvatarUploadView(APIView):
 
 
 class LogoutView(APIView):
-    permission_classes = [AllowAny]
+    """Blacklist a refresh token and log out the authenticated user."""
+
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         try:
-            refresh_token = request.data["refresh"]
-            token = RefreshToken(refresh_token)
+            token = RefreshToken(request.data["refresh"])
             token.blacklist()
             return Response(status=status.HTTP_205_RESET_CONTENT)
 
@@ -95,16 +101,14 @@ class LogoutView(APIView):
             )
 
 
+class LoginView(TokenObtainPairView):
+    """Issue JWT tokens using either username or email credentials."""
+
+    serializer_class = EmailOrUsernameTokenObtainSerializer
+
+
 class UserActivityView(APIView):
-    """
-    Per-day submission counts for a user's activity heatmap (GitHub-style).
-
-    GET /api/users/{id}/activity/ -> sparse map of ISO date -> submission count
-    for the last ACTIVITY_WINDOW_DAYS days, e.g. {"2026-05-01": 3, "2026-05-02": 7}.
-
-    Counts ALL submissions regardless of verdict (activity, not achievement).
-    Requires auth (project default); 404 if the user does not exist.
-    """
+    """Return per-day submission counts for the last 365 days."""
 
     permission_classes = [IsAuthenticated]
 
@@ -150,6 +154,8 @@ class UserDetailView(RetrieveAPIView):
 
 
 def finish_contest_view(request, contest_id):
+    """Finish a contest and update participants' ELO ratings."""
+
     contest = get_object_or_404(Contest, id=contest_id)
 
     if request.method == "POST":
@@ -172,3 +178,13 @@ def finish_contest_view(request, contest_id):
     calculate_elo(winner=user_winner, loser=user_loser, contest=contest)
 
     return JsonResponse({"status": "success"})
+
+
+class MeView(RetrieveAPIView):
+    """Return the authenticated user's profile."""
+
+    serializer_class = UserMeSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user

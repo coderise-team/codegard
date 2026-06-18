@@ -1,9 +1,11 @@
 from django.urls import path
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework_simplejwt.views import TokenRefreshView
 
 from .views import (
     AvatarUploadView,
+    LoginView,
     LogoutView,
+    MeView,
     RegisterView,
     UserActivityView,
     UserDetailView,
@@ -13,11 +15,12 @@ from .views import (
 app_name = "users"
 
 urlpatterns = [
-    path("register/", RegisterView.as_view()),
-    path("login/", TokenObtainPairView.as_view()),
-    path("token/refresh/", TokenRefreshView.as_view()),
-    path("logout/", LogoutView.as_view()),
+    path("register/", RegisterView.as_view(), name="register"),
+    path("login/", LoginView.as_view(), name="login"),
+    path("token/refresh/", TokenRefreshView.as_view(), name="token-refresh"),
+    path("logout/", LogoutView.as_view(), name="logout"),
     path("avatar/", AvatarUploadView.as_view(), name="avatar-upload"),
+    path("me/", MeView.as_view(), name="me"),
     path("<int:user_id>/activity/", UserActivityView.as_view(), name="user-activity"),
     path(
         "<str:username>/elo-history/",

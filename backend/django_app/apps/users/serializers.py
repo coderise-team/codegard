@@ -1,9 +1,14 @@
 import io
 from pathlib import Path
 
+from django.conf import settings
+from django.contrib.auth.password_validation import (
+    validate_password as dj_validate_password,
+)
 from django.core.files.uploadedfile import SimpleUploadedFile
 from PIL import Image, ImageOps, UnidentifiedImageError
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from .models import EloHistory, User
 from .services import get_rank
@@ -19,32 +24,30 @@ ALLOWED_CONTENT_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
 
 
 class UserRegisterSerializer(serializers.ModelSerializer):
-    password2 = serializers.CharField(write_only=True)
+    """Serializer used for user registration."""
 
     class Meta:
         model = User
-        fields = ["username", "email", "password", "password2"]
+        fields = ["username", "email", "password"]
         extra_kwargs = {"password": {"write_only": True}}
 
     def validate_username(self, value):
-        if User.objects.filter(username=value).exists():
-            raise serializers.ValidationError("This username already exists")
+        if value.lower() in settings.RESERVED_USERNAMES:
+            raise serializers.ValidationError("This username is reserved")
         return value
 
     def validate_email(self, value):
-        if User.objects.filter(email=value).exists():
+        value = value.lower()
+        if User.objects.filter(email__iexact=value).exists():
             raise serializers.ValidationError("This email already exists")
         return value
 
-    def validate(self, data):
-        if data["password"] != data["password2"]:
-            raise serializers.ValidationError("Passwords do not match")
-        return data
+    def validate_password(self, value):
+        dj_validate_password(value)
+        return value
 
-    def create(self, verified_data):
-        verified_data.pop("password2")
-        user = User.objects.create_user(**verified_data)
-        return user
+    def create(self, validated_data):
+        return User.objects.create_user(**validated_data)
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -119,3 +122,25 @@ class AvatarUploadSerializer(serializers.ModelSerializer):
                 f"Maximum size is {MAX_AVATAR_SIZE_BYTES // (1024 * 1024)} MB."
             )
         return processed
+
+
+class EmailOrUsernameTokenObtainSerializer(TokenObtainPairSerializer):
+    """Allow JWT authentication using either username or email."""
+
+    def validate(self, attrs):
+        login = attrs.get("username", "")
+        if "@" in login:
+            try:
+                user = User.objects.get(email__iexact=login)
+                attrs["username"] = user.username
+            except User.DoesNotExist:
+                pass
+        return super().validate(attrs)
+
+
+class UserMeSerializer(serializers.ModelSerializer):
+    """Minimal representation of the authenticated user."""
+
+    class Meta:
+        model = User
+        fields = ["username", "avatar"]

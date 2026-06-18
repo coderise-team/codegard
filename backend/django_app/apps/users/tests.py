@@ -14,11 +14,15 @@ User = get_user_model()
 
 @pytest.fixture
 def client():
+    """DRF API client used for authentication endpoint tests."""
+
     return APIClient()
 
 
 @pytest.fixture
 def user_data():
+    """Default payload for user registration tests."""
+
     return {
         "username": "testuser",
         "email": "test@mail.com",
@@ -197,7 +201,11 @@ def test_logout_without_token(client, user_data):
 
 
 class EloRatingTestCase(TestCase):
+    """Tests ELO rating updates and history creation."""
+
     def setUp(self):
+        """Create two players and a contest for ELO calculations."""
+
         self.user1 = User.objects.create_user(
             username="qwerty",
             email="p1@test.com",
@@ -226,7 +234,7 @@ class EloRatingTestCase(TestCase):
         self.winner = self.user1
         self.loser = self.user2
 
-    def test_equal_players_match(self):
+    def test_equal_players_gain_and_lose_16_points(self):
         calculate_elo(
             winner=self.first_player, loser=self.second_player, contest=self.match
         )
@@ -236,7 +244,7 @@ class EloRatingTestCase(TestCase):
         self.assertEqual(self.winner.elo_rating, 1216)
         self.assertEqual(self.second_player.elo_rating, 1184)
 
-    def test_upset_match(self):
+    def test_lower_rated_player_gains_more_points_after_upset(self):
         self.first_player.elo_rating = 1000
         self.second_player.elo_rating = 1600
         self.first_player.save()
@@ -249,7 +257,7 @@ class EloRatingTestCase(TestCase):
 
         self.assertTrue(self.first_player.elo_rating > 1030)
 
-    def test_history_logging(self):
+    def test_calculate_elo_creates_history_entries(self):
         calculate_elo(
             winner=self.first_player, loser=self.second_player, contest=self.contest
         )
@@ -262,7 +270,7 @@ class EloRatingTestCase(TestCase):
         loss_hist = EloHistory.objects.get(user=self.second_player)
         self.assertEqual(loss_hist.rating, 1184)
 
-    def test_calculate_elo_success(self):
+    def test_calculate_elo_updates_ratings_and_history(self):
         self.user1.elo_rating = 1000
         self.user2.elo_rating = 1000
 

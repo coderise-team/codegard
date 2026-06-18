@@ -29,10 +29,13 @@ from .serializers import (
 )
 from .services import calculate_elo
 
+# Number of days included in a user's submission activity timeline.
 ACTIVITY_WINDOW_DAYS = 365
 
 
 class RegisterView(APIView):
+    """Register a new user and immediately issue JWT tokens."""
+
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -75,6 +78,8 @@ class AvatarUploadView(APIView):
 
 
 class LogoutView(APIView):
+    """Blacklist a refresh token and log out the authenticated user."""
+
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
@@ -97,10 +102,14 @@ class LogoutView(APIView):
 
 
 class LoginView(TokenObtainPairView):
+    """Issue JWT tokens using either username or email credentials."""
+
     serializer_class = EmailOrUsernameTokenObtainSerializer
 
 
 class UserActivityView(APIView):
+    """Return per-day submission counts for the last 365 days."""
+
     permission_classes = [IsAuthenticated]
 
     def get(self, request, user_id: int):
@@ -145,6 +154,8 @@ class UserDetailView(RetrieveAPIView):
 
 
 def finish_contest_view(request, contest_id):
+    """Finish a contest and update participants' ELO ratings."""
+
     contest = get_object_or_404(Contest, id=contest_id)
 
     if request.method == "POST":
@@ -170,6 +181,8 @@ def finish_contest_view(request, contest_id):
 
 
 class MeView(RetrieveAPIView):
+    """Return the authenticated user's profile."""
+
     serializer_class = UserMeSerializer
     permission_classes = [IsAuthenticated]
 

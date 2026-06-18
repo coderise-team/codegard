@@ -24,6 +24,7 @@ ALLOWED_CONTENT_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
 
 
 class UserRegisterSerializer(serializers.ModelSerializer):
+    """Serializer used for user registration."""
     class Meta:
         model = User
         fields = ["username", "email", "password"]
@@ -123,6 +124,7 @@ class AvatarUploadSerializer(serializers.ModelSerializer):
 
 
 class EmailOrUsernameTokenObtainSerializer(TokenObtainPairSerializer):
+    """Allow JWT authentication using either username or email."""
     def validate(self, attrs):
         login = attrs.get("username", "")
         if "@" in login:
@@ -135,6 +137,7 @@ class EmailOrUsernameTokenObtainSerializer(TokenObtainPairSerializer):
 
 
 class UserMeSerializer(serializers.ModelSerializer):
+    """Minimal representation of the authenticated user."""
     class Meta:
         model = User
         fields = ["username", "avatar"]

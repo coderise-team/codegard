@@ -36,6 +36,7 @@ INSTALLED_APPS = [
 
 AUTH_USER_MODEL = "users.User"
 
+# JWT authentication settings.
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
@@ -99,6 +100,7 @@ STORAGES = {
     "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
 }
 
+# Django REST framework defaults.
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework_simplejwt.authentication.JWTAuthentication",
@@ -121,7 +123,7 @@ REDIS_URL = env("REDIS_URL", default=CELERY_BROKER_URL)  # noqa: F405
 
 from .storages import *  # noqa: F403,F401,E402,I001
 
-
+# Channels configuration.
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
@@ -131,9 +133,10 @@ CHANNEL_LAYERS = {
     },
 }
 
-# Cors
+# Allowed frontend origins for CORS.
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
 ]
 
+# Usernames reserved for API routes.
 RESERVED_USERNAMES = {"me", "login", "register", "logout", "avatar", "token"}

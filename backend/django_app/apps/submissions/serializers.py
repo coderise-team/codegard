@@ -40,6 +40,7 @@ class SubmissionCreateSerializer(serializers.ModelSerializer):
 class SubmissionSerializer(serializers.ModelSerializer):
     """Used for GET — read-only, full info."""
 
+    problem_title = serializers.CharField(source="problem.title", read_only=True)
     verdict_display = serializers.CharField(
         source="get_verdict_display", read_only=True
     )
@@ -54,6 +55,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
             "id",
             "user",
             "problem",
+            "problem_title",
             "contest",
             "code",
             "language",

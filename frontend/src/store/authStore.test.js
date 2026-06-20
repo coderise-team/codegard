@@ -48,6 +48,31 @@ describe('authStore', () => {
     expect(store().isAuthenticated).toBe(true);
   });
 
+  it('login rolls back tokens and rethrows when /me/ fails', async () => {
+    authApi.login.mockResolvedValue({ access: 'a', refresh: 'r' });
+    authApi.me.mockRejectedValue(new Error('boom'));
+
+    await expect(store().login({ username: 'u', password: 'p' })).rejects.toThrow('boom');
+
+    expect(tokenStorage.set).toHaveBeenCalledWith({ access: 'a', refresh: 'r' });
+    expect(tokenStorage.clear).toHaveBeenCalled();
+    expect(store().user).toBeNull();
+    expect(store().isAuthenticated).toBe(false);
+  });
+
+  it('register rolls back tokens and rethrows when /me/ fails', async () => {
+    authApi.register.mockResolvedValue({ access: 'a', refresh: 'r' });
+    authApi.me.mockRejectedValue(new Error('boom'));
+
+    await expect(
+      store().register({ username: 'u', email: 'e', password: 'p' }),
+    ).rejects.toThrow('boom');
+
+    expect(tokenStorage.clear).toHaveBeenCalled();
+    expect(store().user).toBeNull();
+    expect(store().isAuthenticated).toBe(false);
+  });
+
   it('hydrate fetches the user and authenticates when a token exists', async () => {
     tokenStorage.getAccess.mockReturnValue('tok');
     authApi.me.mockResolvedValue({ username: 'u', avatar: null });

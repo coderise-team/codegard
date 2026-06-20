@@ -21,7 +21,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   tokenStorage.getAccess.mockReturnValue(null);
   tokenStorage.getRefresh.mockReturnValue(null);
-  useAuthStore.setState({ user: null, isAuthenticated: false });
+  useAuthStore.setState({ user: null, isAuthenticated: false, isHydrating: true });
 });
 
 describe('authStore', () => {
@@ -46,6 +46,40 @@ describe('authStore', () => {
     expect(tokenStorage.set).toHaveBeenCalledWith({ access: 'a', refresh: 'r' });
     expect(store().user).toEqual({ username: 'u', avatar: null });
     expect(store().isAuthenticated).toBe(true);
+  });
+
+  it('hydrate fetches the user and authenticates when a token exists', async () => {
+    tokenStorage.getAccess.mockReturnValue('tok');
+    authApi.me.mockResolvedValue({ username: 'u', avatar: null });
+
+    await store().hydrate();
+
+    expect(authApi.me).toHaveBeenCalled();
+    expect(store().user).toEqual({ username: 'u', avatar: null });
+    expect(store().isAuthenticated).toBe(true);
+    expect(store().isHydrating).toBe(false);
+  });
+
+  it('hydrate stays a guest and skips /me/ when there is no token', async () => {
+    tokenStorage.getAccess.mockReturnValue(null);
+
+    await store().hydrate();
+
+    expect(authApi.me).not.toHaveBeenCalled();
+    expect(store().isAuthenticated).toBe(false);
+    expect(store().isHydrating).toBe(false);
+  });
+
+  it('hydrate clears tokens and stays a guest when /me/ fails', async () => {
+    tokenStorage.getAccess.mockReturnValue('stale');
+    authApi.me.mockRejectedValue(new Error('401'));
+
+    await store().hydrate();
+
+    expect(tokenStorage.clear).toHaveBeenCalled();
+    expect(store().user).toBeNull();
+    expect(store().isAuthenticated).toBe(false);
+    expect(store().isHydrating).toBe(false);
   });
 
   it('logout calls the API, clears tokens and resets state', async () => {

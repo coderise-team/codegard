@@ -5,7 +5,25 @@ import { tokenStorage } from '../api/client';
 
 export const useAuthStore = create((set) => ({
   user: null,
-  isAuthenticated: Boolean(tokenStorage.getAccess()),
+  isAuthenticated: false,
+  isHydrating: true,
+
+  // Restore the session on app start: a stored token only proves intent, so
+  // verify it against the backend and load the user before trusting it.
+  hydrate: async () => {
+    if (!tokenStorage.getAccess()) {
+      set({ isHydrating: false });
+      return;
+    }
+    try {
+      set({ user: await authApi.me(), isAuthenticated: true });
+    } catch {
+      tokenStorage.clear();
+      set({ user: null, isAuthenticated: false });
+    } finally {
+      set({ isHydrating: false });
+    }
+  },
 
   login: async (credentials) => {
     tokenStorage.set(await authApi.login(credentials));

@@ -10,7 +10,10 @@ import { useAuthStore } from '../store/authStore';
  */
 export default function PrivateRoute() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const isHydrating = useAuthStore((s) => s.isHydrating);
   const location = useLocation();
+
+  if (isHydrating) return null;
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace state={{ from: location }} />;

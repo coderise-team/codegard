@@ -9,6 +9,9 @@ import { useAuthStore } from '../store/authStore';
  */
 export default function GuestRoute() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const isHydrating = useAuthStore((s) => s.isHydrating);
+
+  if (isHydrating) return null;
 
   if (isAuthenticated) {
     return <Navigate to="/" replace />;

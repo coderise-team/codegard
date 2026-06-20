@@ -8,15 +8,13 @@ export const useAuthStore = create((set) => ({
   isAuthenticated: Boolean(tokenStorage.getAccess()),
 
   login: async (credentials) => {
-    const data = await authApi.login(credentials);
-    tokenStorage.set(data);
-    set({ isAuthenticated: true });
+    tokenStorage.set(await authApi.login(credentials));
+    set({ user: await authApi.me(), isAuthenticated: true });
   },
 
   register: async (payload) => {
-    const data = await authApi.register(payload);
-    tokenStorage.set(data);
-    set({ user: data.user, isAuthenticated: true });
+    tokenStorage.set(await authApi.register(payload));
+    set({ user: await authApi.me(), isAuthenticated: true });
   },
 
   logout: async () => {

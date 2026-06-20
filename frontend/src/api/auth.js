@@ -1,12 +1,18 @@
 import client from './client';
 
-// POST users/register/ -> { user: { username, email }, access, refresh }
+// POST users/register/ -> { access, refresh }
 export async function register({ username, email, password }) {
   const { data } = await client.post('users/register/', {
     username,
     email,
     password,
   });
+  return data;
+}
+
+// GET users/me/ -> { username, avatar }
+export async function me() {
+  const { data } = await client.get('users/me/');
   return data;
 }
 

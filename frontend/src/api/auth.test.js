@@ -1,17 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-const { post } = vi.hoisted(() => ({ post: vi.fn() }));
-vi.mock('./client', () => ({ default: { post } }));
+const { post, get } = vi.hoisted(() => ({ post: vi.fn(), get: vi.fn() }));
+vi.mock('./client', () => ({ default: { post, get } }));
 
-import { register, login, refresh, logout } from './auth';
+import { register, login, refresh, logout, me } from './auth';
 
-beforeEach(() => post.mockReset());
+beforeEach(() => {
+  post.mockReset();
+  get.mockReset();
+});
 
 describe('auth API', () => {
   it('register posts credentials and returns the response body', async () => {
-    post.mockResolvedValue({
-      data: { user: { username: 'u', email: 'e@x.io' }, access: 'a', refresh: 'r' },
-    });
+    post.mockResolvedValue({ data: { access: 'a', refresh: 'r' } });
 
     const data = await register({ username: 'u', email: 'e@x.io', password: 'p' });
 
@@ -20,11 +21,16 @@ describe('auth API', () => {
       email: 'e@x.io',
       password: 'p',
     });
-    expect(data).toEqual({
-      user: { username: 'u', email: 'e@x.io' },
-      access: 'a',
-      refresh: 'r',
-    });
+    expect(data).toEqual({ access: 'a', refresh: 'r' });
+  });
+
+  it('me fetches the current user', async () => {
+    get.mockResolvedValue({ data: { username: 'u', avatar: null } });
+
+    const data = await me();
+
+    expect(get).toHaveBeenCalledWith('users/me/');
+    expect(data).toEqual({ username: 'u', avatar: null });
   });
 
   it('login posts username/password and returns the body', async () => {

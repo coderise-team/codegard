@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const { authApi, tokenStorage } = vi.hoisted(() => ({
-  authApi: { login: vi.fn(), register: vi.fn(), logout: vi.fn() },
+  authApi: { login: vi.fn(), register: vi.fn(), logout: vi.fn(), me: vi.fn() },
   tokenStorage: {
     getAccess: vi.fn(),
     getRefresh: vi.fn(),
@@ -25,28 +25,26 @@ beforeEach(() => {
 });
 
 describe('authStore', () => {
-  it('login stores tokens and authenticates without a user', async () => {
+  it('login stores tokens, fetches the user and authenticates', async () => {
     authApi.login.mockResolvedValue({ access: 'a', refresh: 'r' });
+    authApi.me.mockResolvedValue({ username: 'u', avatar: null });
 
     await store().login({ username: 'u', password: 'p' });
 
     expect(authApi.login).toHaveBeenCalledWith({ username: 'u', password: 'p' });
     expect(tokenStorage.set).toHaveBeenCalledWith({ access: 'a', refresh: 'r' });
+    expect(store().user).toEqual({ username: 'u', avatar: null });
     expect(store().isAuthenticated).toBe(true);
-    expect(store().user).toBeNull();
   });
 
-  it('register stores tokens, sets the user and authenticates', async () => {
-    authApi.register.mockResolvedValue({
-      user: { username: 'u', email: 'e' },
-      access: 'a',
-      refresh: 'r',
-    });
+  it('register stores tokens, fetches the user and authenticates', async () => {
+    authApi.register.mockResolvedValue({ access: 'a', refresh: 'r' });
+    authApi.me.mockResolvedValue({ username: 'u', avatar: null });
 
     await store().register({ username: 'u', email: 'e', password: 'p' });
 
-    expect(tokenStorage.set).toHaveBeenCalled();
-    expect(store().user).toEqual({ username: 'u', email: 'e' });
+    expect(tokenStorage.set).toHaveBeenCalledWith({ access: 'a', refresh: 'r' });
+    expect(store().user).toEqual({ username: 'u', avatar: null });
     expect(store().isAuthenticated).toBe(true);
   });
 

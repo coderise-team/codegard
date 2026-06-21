@@ -104,6 +104,31 @@
   box-shadow: 0 0 0 3px var(--gold-soft);
 }
 
+/* Leave room for the reveal toggle so typed text doesn't slide under it */
+.auth-field input.auth-input-pw {
+  padding-right: 44px;
+}
+
+/* ── Password reveal toggle ──────────────────────────────────── */
+.auth-eye {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--fg2);
+  transition: color .15s;
+}
+.auth-eye:hover { color: var(--gold); }
+
 .auth-field label {
   position: absolute;
   top: 50%;

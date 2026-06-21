@@ -36,6 +36,19 @@ describe('AuthPage', () => {
     expect(screen.getByText(/don't have an account\?/i)).toBeInTheDocument();
   });
 
+  it('toggles password visibility with the reveal button', () => {
+    renderInRouter(<AuthPage />);
+
+    const password = screen.getByLabelText('Password');
+    expect(password).toHaveAttribute('type', 'password');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Show password' }));
+    expect(password).toHaveAttribute('type', 'text');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Hide password' }));
+    expect(password).toHaveAttribute('type', 'password');
+  });
+
   it('renders the register form when mode is "register"', () => {
     renderInRouter(<AuthPage mode="register" />);
 

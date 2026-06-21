@@ -1,4 +1,4 @@
-import React, { useId, useState } from 'react';
+import { useId, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './AuthPage.css';
 import { useAuthStore } from '../store/authStore';

@@ -35,7 +35,7 @@ async function refreshAccessToken() {
   const refresh = tokenStorage.getRefresh();
   if (!refresh) throw new Error('No refresh token');
   // Bare axios call so this request skips the interceptors below.
-  const { data } = await axios.post(`${baseURL}/users/token/refresh/`, {
+  const { data } = await axios.post(`${baseURL.replace(/\/+$/, '')}/users/token/refresh/`, {
     refresh,
   });
   tokenStorage.set(data);

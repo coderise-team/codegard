@@ -5,6 +5,7 @@ from datetime import timedelta
 import pytest
 from apps.contests.models import Contest, ContestScore
 from apps.contests.services import calculate_score
+from apps.contests.views import _leaderboard_rank
 from apps.problems.models import Problem
 from apps.submissions.models import Submission
 from django.urls import reverse
@@ -202,6 +203,12 @@ def test_my_history_only_finished_mine_newest_first(client, user, other):
     data = client.get(reverse("contests-my-history")).json()
     ids = [row["id"] for row in data]
     assert ids == [newer.id, older.id]  # newest first; active + others excluded
+
+
+@pytest.mark.django_db
+def test_leaderboard_rank_returns_none_when_user_absent(user):
+    c = _active_contest()  # no ContestScore for anyone → empty leaderboard
+    assert _leaderboard_rank(c, user.pk) is None
 
 
 @pytest.mark.django_db

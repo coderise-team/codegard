@@ -112,11 +112,11 @@ class UserActivityView(APIView):
 
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, user_id: int):
-        get_object_or_404(User, pk=user_id)
+    def get(self, request, username: str):
+        user = get_object_or_404(User, username=username)
         since = timezone.now() - timedelta(days=ACTIVITY_WINDOW_DAYS)
         rows = (
-            Submission.objects.filter(user_id=user_id, created_at__gte=since)
+            Submission.objects.filter(user=user, created_at__gte=since)
             .annotate(day=TruncDate("created_at"))
             .values("day")
             .annotate(count=Count("id"))
@@ -125,6 +125,37 @@ class UserActivityView(APIView):
         # Sparse: only days that actually have submissions are returned.
         data = {row["day"].isoformat(): row["count"] for row in rows}
         return Response(data)
+
+
+class UserStatsView(APIView):
+    """Aggregate stats for the dashboard StatsStrip: solved, contests, acceptance."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, username: str):
+        user = get_object_or_404(User, username=username)
+        submissions = Submission.objects.filter(user=user)
+        total = submissions.count()
+
+        solved = (
+            Submission.objects.filter(user=user, verdict=Submission.Verdict.AC)
+            .values("problem")
+            .distinct()
+            .count()
+        )
+        accepted = submissions.filter(verdict=Submission.Verdict.AC).count()
+
+        contests = user.contests.count()
+
+        acceptance = 0 if total == 0 else round(accepted / total * 100)
+
+        return Response(
+            {
+                "solved": solved,
+                "contests": contests,
+                "acceptance": acceptance,
+            }
+        )
 
 
 class UserEloHistoryView(APIView):

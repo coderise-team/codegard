@@ -10,6 +10,7 @@ from .views import (
     UserActivityView,
     UserDetailView,
     UserEloHistoryView,
+    UserStatsView,
 )
 
 app_name = "users"
@@ -21,7 +22,8 @@ urlpatterns = [
     path("logout/", LogoutView.as_view(), name="logout"),
     path("avatar/", AvatarUploadView.as_view(), name="avatar-upload"),
     path("me/", MeView.as_view(), name="me"),
-    path("<int:user_id>/activity/", UserActivityView.as_view(), name="user-activity"),
+    path("<str:username>/activity/", UserActivityView.as_view(), name="user-activity"),
+    path("<str:username>/stats/", UserStatsView.as_view(), name="user-stats"),
     path(
         "<str:username>/elo-history/",
         UserEloHistoryView.as_view(),

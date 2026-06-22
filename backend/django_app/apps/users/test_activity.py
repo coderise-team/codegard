@@ -67,7 +67,7 @@ def test_counts_all_submissions_per_day_regardless_of_verdict(client, user, prob
     # day2: 1 submission
     _make_submission(user, problem, verdict=Submission.Verdict.TLE, created_at=day2)
 
-    url = reverse("users:user-activity", args=[user.pk])
+    url = reverse("users:user-activity", args=[user.username])
     resp = client.get(url)
 
     assert resp.status_code == 200
@@ -81,33 +81,33 @@ def test_counts_all_submissions_per_day_regardless_of_verdict(client, user, prob
 def test_sparse_no_empty_days(client, user, problem):
     """Only days with activity appear — no zero-filled gaps."""
     _make_submission(user, problem, created_at=timezone.now() - timedelta(days=5))
-    resp = client.get(reverse("users:user-activity", args=[user.pk]))
+    resp = client.get(reverse("users:user-activity", args=[user.username]))
     assert len(resp.json()) == 1
 
 
 @pytest.mark.django_db
 def test_excludes_submissions_older_than_window(client, user, problem):
     _make_submission(user, problem, created_at=timezone.now() - timedelta(days=400))
-    resp = client.get(reverse("users:user-activity", args=[user.pk]))
+    resp = client.get(reverse("users:user-activity", args=[user.username]))
     assert resp.json() == {}
 
 
 @pytest.mark.django_db
 def test_empty_for_user_without_submissions(client, user):
-    resp = client.get(reverse("users:user-activity", args=[user.pk]))
+    resp = client.get(reverse("users:user-activity", args=[user.username]))
     assert resp.status_code == 200
     assert resp.json() == {}
 
 
 @pytest.mark.django_db
 def test_nonexistent_user_returns_404(client):
-    resp = client.get(reverse("users:user-activity", args=[999999]))
+    resp = client.get(reverse("users:user-activity", args=["no-such_user"]))
     assert resp.status_code == 404
 
 
 @pytest.mark.django_db
 def test_requires_authentication(user):
-    resp = APIClient().get(reverse("users:user-activity", args=[user.pk]))
+    resp = APIClient().get(reverse("users:user-activity", args=[user.username]))
     assert resp.status_code in (401, 403)  # unauthenticated rejected
 
 
@@ -119,7 +119,7 @@ def test_only_target_users_submissions(client, user, problem, django_user_model)
     _make_submission(user, problem, created_at=timezone.now() - timedelta(days=1))
     _make_submission(other, problem, created_at=timezone.now() - timedelta(days=1))
 
-    resp = client.get(reverse("users:user-activity", args=[user.pk]))
+    resp = client.get(reverse("users:user-activity", args=[user.username]))
     assert sum(resp.json().values()) == 1  # only `user`'s submission counted
 
 
@@ -130,5 +130,5 @@ def test_same_day_different_times_grouped_as_one(client, user, problem):
     day = timezone.now().replace(hour=9, minute=0, second=0, microsecond=0)
     _make_submission(user, problem, created_at=day)
     _make_submission(user, problem, created_at=day + timedelta(hours=8))
-    resp = client.get(reverse("users:user-activity", args=[user.pk]))
+    resp = client.get(reverse("users:user-activity", args=[user.username]))
     assert resp.json() == {day.date().isoformat(): 2}

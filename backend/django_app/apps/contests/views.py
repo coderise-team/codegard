@@ -1,3 +1,7 @@
+from collections import defaultdict
+
+from apps.submissions.models import Submission
+from django.utils import timezone
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import (
@@ -7,14 +11,24 @@ from rest_framework.permissions import (
 )
 from rest_framework.response import Response
 
-from .models import Contest
+from .models import Contest, ContestScore
 from .serializers import (
     ContestDetailSerializer,
     ContestSerializer,
     ContestWriteSerializer,
     LeaderboardEntrySerializer,
+    MyContestHistorySerializer,
 )
 from .services import get_leaderboard
+
+
+def _leaderboard_rank(contest, user_id):
+    """1-based position of user_id in the contest leaderboard, or None."""
+    user_ids = list(get_leaderboard(contest).values_list("user_id", flat=True))
+    try:
+        return user_ids.index(user_id) + 1
+    except ValueError:
+        return None
 
 
 class ContestViewSet(viewsets.ModelViewSet):
@@ -38,7 +52,7 @@ class ContestViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action in ["create", "update", "partial_update", "destroy"]:
             return [IsAdminUser()]
-        if self.action in ["join", "leave"]:
+        if self.action in ["join", "leave", "my_standing", "my_history"]:
             return [IsAuthenticated()]
         return [IsAuthenticatedOrReadOnly()]
 
@@ -140,4 +154,65 @@ class ContestViewSet(viewsets.ModelViewSet):
             data.append(entry)
 
         serializer = LeaderboardEntrySerializer(data, many=True)
+        return Response(serializer.data)
+
+    @action(
+        detail=True,
+        methods=["get"],
+        url_path="my-standing",
+        permission_classes=[IsAuthenticated],
+    )
+    def my_standing(self, request, pk=None):
+        """GET /api/contests/{id}/my-standing/ — my rank/score/solved + statuses."""
+        contest = self.get_object()
+
+        score_obj = ContestScore.objects.filter(
+            user=request.user, contest=contest
+        ).first()
+        score = score_obj.score if score_obj else 0
+        solved = score_obj.solved_count if score_obj else 0
+        rank = _leaderboard_rank(contest, request.user.pk) if score_obj else None
+
+        # All my submissions for this contest in ONE query, grouped in memory.
+        verdicts_by_problem = defaultdict(set)
+        for problem_id, verdict in Submission.objects.filter(
+            user=request.user, contest=contest
+        ).values_list("problem_id", "verdict"):
+            verdicts_by_problem[problem_id].add(verdict)
+
+        problems = []
+        for problem in contest.problems.all():
+            verdicts = verdicts_by_problem.get(problem.id)
+            if verdicts is None:
+                problem_status = "open"
+            elif Submission.Verdict.AC in verdicts:
+                problem_status = "solved"
+            else:
+                problem_status = "attempted"
+            problems.append({"id": problem.id, "status": problem_status})
+
+        return Response(
+            {"rank": rank, "score": score, "solved": solved, "problems": problems}
+        )
+
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="my-history",
+        permission_classes=[IsAuthenticated],
+    )
+    def my_history(self, request):
+        """GET /api/contests/my-history/ — my finished contests, newest first."""
+        # "Finished" by time, not by the cached `status` field (may be stale).
+        scores = list(
+            ContestScore.objects.filter(
+                user=request.user, contest__end_time__lt=timezone.now()
+            )
+            .select_related("contest")
+            .order_by("-contest__end_time")
+        )
+        for score in scores:
+            score.rank = _leaderboard_rank(score.contest, request.user.pk)
+
+        serializer = MyContestHistorySerializer(scores, many=True)
         return Response(serializer.data)

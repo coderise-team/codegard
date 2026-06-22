@@ -204,6 +204,12 @@ class TestSubmissionList:
         assert len(results) == 1
         assert results[0]["id"] == submission.pk
 
+    def test_submission_includes_problem_title(self, auth_client, submission):
+        url = reverse("submissions-list")
+        response = auth_client.get(url)
+        results = response.data.get("results", response.data)
+        assert results[0]["problem_title"] == "Two Sum"
+
     def test_user_cannot_see_other_submissions(
         self, api_client, other_user, submission
     ):

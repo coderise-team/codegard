@@ -12,9 +12,24 @@ export default defineConfig(({ mode }) => {
     throw new Error('VITE_API_URL is not set in .env')
   }
 
+  // Dev only: serve API on the same origin as the app so prod's relative
+  // /api works unchanged and no CORS is needed.
+  const proxyTarget = env.VITE_DEV_PROXY_TARGET
+  const proxy = proxyTarget
+    ? {
+        '/api': { target: proxyTarget, changeOrigin: true },
+        '/ws': { target: proxyTarget, changeOrigin: true, ws: true },
+      }
+    : undefined
+
   return {
     envDir,
     plugins: [react(), babel({ presets: [reactCompilerPreset()] })],
+    server: {
+      host: true,
+      port: 5173,
+      proxy,
+    },
     test: {
       globals: true,
       environment: 'jsdom',

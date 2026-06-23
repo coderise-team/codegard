@@ -160,7 +160,7 @@ jobs:
         run: PYTHONPATH=../shared uv run pytest ../shared/tests/ -v
 
   frontend:
-    name: Lint (frontend)
+    name: Frontend
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -184,3 +184,8 @@ jobs:
 
       - name: Prettier check
         run: npx prettier --check .
+
+      - name: Run tests
+        env:
+          VITE_API_URL: /api
+        run: npm run test:run

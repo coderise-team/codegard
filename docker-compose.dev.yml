@@ -289,6 +289,38 @@ services:
       retries: 3
       start_period: 20s
 
+  frontend:
+    build:
+      context: ./frontend
+      target: dev
+    env_file: .env
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    networks:
+      - codegard_net
+    develop:
+      watch:
+        - action: sync
+          path: ./frontend
+          target: /app
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: ./frontend/package-lock.json
+
+  frontend-test:
+    build:
+      context: ./frontend
+      target: test
+    command: run-tests
+    profiles:
+      - test
+    env_file: .env
+    networks:
+      - codegard_net
+
 networks:
   codegard_net:
     driver: bridge

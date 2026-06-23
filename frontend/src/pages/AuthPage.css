@@ -1,0 +1,319 @@
+/* AuthPage — login / registration screen */
+
+/* ── Page ───────────────────────────────────────────────────── */
+.auth-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background: var(--bg);
+  font-family: var(--ui);
+}
+
+/* ── Ring ───────────────────────────────────────────────────── */
+.auth-ring {
+  position: relative;
+  width: 256px;
+  height: 256px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+  /* Tick-mark scale; lowered on small screens so the ring isn't clipped */
+  --ring-scale: 2.35;
+}
+
+/* 50 tick-marks */
+.auth-ring span {
+  position: absolute;
+  left: 0;
+  width: 30px;
+  height: 5px;
+  background: var(--border);
+  border-radius: 6px;
+  transform-origin: 128px;
+  transform: scale(var(--ring-scale)) rotate(calc(var(--i) * (360deg / 50)));
+  animation: cgBlink 4.2s linear infinite;
+  animation-delay: calc(var(--i) * (4.2s / 50));
+}
+
+@keyframes cgBlink {
+  0% {
+    background: var(--gold);
+    box-shadow: 0 0 6px var(--accent-glow);
+  }
+  20% {
+    background: var(--border);
+    box-shadow: none;
+  }
+  100% {
+    background: var(--border);
+    box-shadow: none;
+  }
+}
+
+/* ── Form box (over ring, fixed) ────────────────────────────── */
+/*
+  position: absolute keeps it out of .auth-ring's box (256×256),
+  so the ring doesn't shift when errors appear / the mode changes.
+  Centered via translate(-50%, -50%).
+*/
+.auth-box {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  /* Cap at 360px on desktop; shrink with a 16px gutter on narrow screens */
+  width: min(360px, calc(100vw - 32px));
+  /* Cap height so a tall form doesn't overflow the screen */
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.auth-box::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Form ───────────────────────────────────────────────────── */
+.auth-form {
+  width: 100%;
+  padding: 0 40px;
+}
+
+.auth-title {
+  font-size: 1.6em;
+  font-weight: 700;
+  color: var(--fg);
+  text-align: center;
+  letter-spacing: -0.02em;
+  margin-bottom: 24px;
+}
+
+/* ── Floating label field ────────────────────────────────────── */
+.auth-field {
+  position: relative;
+  margin: 20px 0;
+}
+
+.auth-field input {
+  width: 100%;
+  height: 46px;
+  background: var(--card-2);
+  border: 1.5px solid var(--border);
+  outline: none;
+  border-radius: 10px;
+  font-size: 0.9em;
+  font-family: var(--ui);
+  color: var(--fg);
+  padding: 0 18px;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.auth-field input:focus {
+  border-color: var(--gold-line);
+  box-shadow: 0 0 0 3px var(--gold-soft);
+}
+
+/* Leave room for the reveal toggle so typed text doesn't slide under it */
+.auth-field input.auth-input-pw {
+  padding-right: 44px;
+}
+
+/* ── Password reveal toggle ──────────────────────────────────── */
+.auth-eye {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--fg2);
+  transition: color 0.15s;
+}
+.auth-eye:hover {
+  color: var(--gold);
+}
+
+.auth-field label {
+  position: absolute;
+  top: 50%;
+  left: 18px;
+  transform: translateY(-50%);
+  font-size: 0.9em;
+  color: var(--fg2);
+  pointer-events: none;
+  transition:
+    top 0.2s,
+    font-size 0.2s,
+    color 0.2s,
+    padding 0.2s;
+}
+
+.auth-field input:focus ~ label,
+.auth-field input:not(:placeholder-shown) ~ label {
+  top: 0;
+  font-size: 0.72em;
+  background: var(--card-2);
+  padding: 0 5px;
+  color: var(--gold);
+}
+
+/* ── Forgot ──────────────────────────────────────────────────── */
+.auth-forgot {
+  margin: -10px 0 14px;
+  text-align: right;
+}
+.auth-forgot a {
+  font-size: 0.78em;
+  color: var(--fg2);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.auth-forgot a:hover {
+  color: var(--gold);
+}
+
+/* ── Error ───────────────────────────────────────────────────── */
+.auth-error {
+  font-size: 12.5px;
+  color: var(--wa);
+  background: var(--wa-soft);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  padding: 9px 13px;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+/* ── Submit button ───────────────────────────────────────────── */
+.auth-btn {
+  width: 100%;
+  height: 42px;
+  background: linear-gradient(150deg, var(--gold-hi), var(--gold));
+  border: none;
+  outline: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.92em;
+  font-family: var(--ui);
+  font-weight: 700;
+  color: #1a0f3a;
+  letter-spacing: 0.01em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 0 0 1px var(--accent-glow),
+    0 5px 18px var(--accent-glow-2);
+  transition:
+    background 0.18s,
+    color 0.18s,
+    box-shadow 0.18s,
+    transform 0.1s;
+}
+.auth-btn:hover:not(:disabled) {
+  background: linear-gradient(125deg, #7c3aed 0%, #e879f9 100%);
+  color: #fff;
+  box-shadow:
+    0 0 0 1px rgba(232, 121, 249, 0.45),
+    0 6px 22px rgba(124, 58, 237, 0.4);
+}
+.auth-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+.auth-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.auth-spin {
+  display: block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid rgba(26, 15, 58, 0.4);
+  border-top-color: #1a0f3a;
+  animation: spin 0.7s linear infinite;
+}
+
+/* ── Switch link ─────────────────────────────────────────────── */
+.auth-switch {
+  margin: 16px 0 4px;
+  text-align: center;
+  font-size: 0.82em;
+  color: var(--fg2);
+}
+.auth-switch-link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--gold);
+  font-weight: 600;
+  font-family: var(--ui);
+  font-size: inherit;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.auth-switch-link:hover {
+  color: var(--gold-hi);
+}
+
+/* ── OAuth ───────────────────────────────────────────────────── */
+.auth-oauth {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 14px;
+  padding-bottom: 4px;
+}
+.auth-oauth-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--card-2);
+  border: 1.5px solid var(--border);
+  border-radius: 50%;
+  cursor: pointer;
+  color: var(--fg2);
+  transition:
+    border-color 0.15s,
+    color 0.15s,
+    background 0.15s;
+  padding: 0;
+}
+.auth-oauth-btn:hover {
+  border-color: var(--border-2);
+  color: var(--fg);
+  background: #1a1e2e;
+}
+
+/* ── Small / short screens: drop the ring (it needs ~600px each way),
+   wrap the form in a card. Covers narrow portrait AND short landscape. ── */
+@media (max-width: 640px), (max-height: 640px) {
+  .auth-ring span {
+    display: none;
+  }
+  .auth-box {
+    width: min(420px, calc(100vw - 32px));
+    padding: 24px 0;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  }
+  .auth-form {
+    padding: 0 24px;
+  }
+}

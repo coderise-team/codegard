@@ -17,8 +17,8 @@ export default defineConfig(({ mode }) => {
   const proxyTarget = env.VITE_DEV_PROXY_TARGET
   const proxy = proxyTarget
     ? {
-        '/api': { target: proxyTarget, changeOrigin: true },
-        '/ws': { target: proxyTarget, changeOrigin: true, ws: true },
+        '/api': { target: proxyTarget, changeOrigin: false },
+        '/ws': { target: proxyTarget, changeOrigin: false, ws: true },
       }
     : undefined
 

@@ -21,7 +21,11 @@ beforeEach(() => {
   vi.clearAllMocks();
   tokenStorage.getAccess.mockReturnValue(null);
   tokenStorage.getRefresh.mockReturnValue(null);
-  useAuthStore.setState({ user: null, isAuthenticated: false, isHydrating: true });
+  useAuthStore.setState({
+    user: null,
+    isAuthenticated: false,
+    isHydrating: true,
+  });
 });
 
 describe('authStore', () => {
@@ -31,8 +35,14 @@ describe('authStore', () => {
 
     await store().login({ username: 'u', password: 'p' });
 
-    expect(authApi.login).toHaveBeenCalledWith({ username: 'u', password: 'p' });
-    expect(tokenStorage.set).toHaveBeenCalledWith({ access: 'a', refresh: 'r' });
+    expect(authApi.login).toHaveBeenCalledWith({
+      username: 'u',
+      password: 'p',
+    });
+    expect(tokenStorage.set).toHaveBeenCalledWith({
+      access: 'a',
+      refresh: 'r',
+    });
     expect(store().user).toEqual({ username: 'u', avatar: null });
     expect(store().isAuthenticated).toBe(true);
   });
@@ -43,7 +53,10 @@ describe('authStore', () => {
 
     await store().register({ username: 'u', email: 'e', password: 'p' });
 
-    expect(tokenStorage.set).toHaveBeenCalledWith({ access: 'a', refresh: 'r' });
+    expect(tokenStorage.set).toHaveBeenCalledWith({
+      access: 'a',
+      refresh: 'r',
+    });
     expect(store().user).toEqual({ username: 'u', avatar: null });
     expect(store().isAuthenticated).toBe(true);
   });
@@ -52,9 +65,14 @@ describe('authStore', () => {
     authApi.login.mockResolvedValue({ access: 'a', refresh: 'r' });
     authApi.me.mockRejectedValue(new Error('boom'));
 
-    await expect(store().login({ username: 'u', password: 'p' })).rejects.toThrow('boom');
+    await expect(
+      store().login({ username: 'u', password: 'p' })
+    ).rejects.toThrow('boom');
 
-    expect(tokenStorage.set).toHaveBeenCalledWith({ access: 'a', refresh: 'r' });
+    expect(tokenStorage.set).toHaveBeenCalledWith({
+      access: 'a',
+      refresh: 'r',
+    });
     expect(tokenStorage.clear).toHaveBeenCalled();
     expect(store().user).toBeNull();
     expect(store().isAuthenticated).toBe(false);
@@ -65,7 +83,7 @@ describe('authStore', () => {
     authApi.me.mockRejectedValue(new Error('boom'));
 
     await expect(
-      store().register({ username: 'u', email: 'e', password: 'p' }),
+      store().register({ username: 'u', email: 'e', password: 'p' })
     ).rejects.toThrow('boom');
 
     expect(tokenStorage.clear).toHaveBeenCalled();

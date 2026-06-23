@@ -7,16 +7,22 @@ import PrivateRoute from './PrivateRoute';
 const auth = vi.hoisted(() => ({ isAuthenticated: false, isHydrating: false }));
 vi.mock('../store/authStore', () => ({
   useAuthStore: (selector) =>
-    selector({ isAuthenticated: auth.isAuthenticated, isHydrating: auth.isHydrating }),
+    selector({
+      isAuthenticated: auth.isAuthenticated,
+      isHydrating: auth.isHydrating,
+    }),
 }));
 
 const renderRoutes = () => {
   const router = createMemoryRouter(
     [
       { path: '/login', element: <div>Login Page</div> },
-      { element: <PrivateRoute />, children: [{ path: '/', element: <div>Protected</div> }] },
+      {
+        element: <PrivateRoute />,
+        children: [{ path: '/', element: <div>Protected</div> }],
+      },
     ],
-    { initialEntries: ['/'] },
+    { initialEntries: ['/'] }
   );
   return render(<RouterProvider router={router} />);
 };

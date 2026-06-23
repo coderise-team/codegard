@@ -16,7 +16,8 @@ vi.mock('react-router-dom', async (importOriginal) => {
 });
 
 vi.mock('../store/authStore', () => ({
-  useAuthStore: (selector) => selector({ login, register, isAuthenticated: false }),
+  useAuthStore: (selector) =>
+    selector({ login, register, isAuthenticated: false }),
 }));
 
 const renderInRouter = (ui) => render(<MemoryRouter>{ui}</MemoryRouter>);
@@ -52,8 +53,12 @@ describe('AuthPage', () => {
   it('renders the register form when mode is "register"', () => {
     renderInRouter(<AuthPage mode="register" />);
 
-    expect(screen.getByRole('heading', { name: 'Register' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Create account' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Register' })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Create account' })
+    ).toBeInTheDocument();
     expect(screen.getByText(/already have an account\?/i)).toBeInTheDocument();
   });
 
@@ -63,39 +68,54 @@ describe('AuthPage', () => {
     fireEvent.change(screen.getByLabelText('Username or email'), {
       target: { value: 'a@b.io' },
     });
-    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'secret' } });
+    fireEvent.change(screen.getByLabelText('Password'), {
+      target: { value: 'secret' },
+    });
     fireEvent.click(screen.getByRole('button', { name: 'Login' }));
 
     await waitFor(() =>
-      expect(login).toHaveBeenCalledWith({ username: 'a@b.io', password: 'secret' }),
+      expect(login).toHaveBeenCalledWith({
+        username: 'a@b.io',
+        password: 'secret',
+      })
     );
-    await waitFor(() => expect(navigate).toHaveBeenCalledWith('/', { replace: true }));
+    await waitFor(() =>
+      expect(navigate).toHaveBeenCalledWith('/', { replace: true })
+    );
   });
 
   it('shows a backend error and does not redirect on failed login', async () => {
-    login.mockRejectedValue({ response: { data: { detail: 'No active account found' } } });
+    login.mockRejectedValue({
+      response: { data: { detail: 'No active account found' } },
+    });
     renderInRouter(<AuthPage />);
 
     fireEvent.change(screen.getByLabelText('Username or email'), {
       target: { value: 'a@b.io' },
     });
-    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'x' } });
+    fireEvent.change(screen.getByLabelText('Password'), {
+      target: { value: 'x' },
+    });
     fireEvent.click(screen.getByRole('button', { name: 'Login' }));
 
-    expect(await screen.findByText('No active account found')).toBeInTheDocument();
+    expect(
+      await screen.findByText('No active account found')
+    ).toBeInTheDocument();
     expect(navigate).not.toHaveBeenCalled();
   });
 
   it('surfaces DRF field errors (no detail) on failed register', async () => {
     register.mockRejectedValue({
-      response: { data: { username: ['A user with that username already exists.'] } },
+      response: {
+        data: { username: ['A user with that username already exists.'] },
+      },
     });
     renderInRouter(<AuthPage mode="register" />);
 
     fireEvent.click(screen.getByRole('button', { name: 'Create account' }));
 
     expect(
-      await screen.findByText('A user with that username already exists.'),
+      await screen.findByText('A user with that username already exists.')
     ).toBeInTheDocument();
     expect(navigate).not.toHaveBeenCalled();
   });

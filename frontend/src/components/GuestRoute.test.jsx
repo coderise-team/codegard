@@ -7,16 +7,22 @@ import GuestRoute from './GuestRoute';
 const auth = vi.hoisted(() => ({ isAuthenticated: false, isHydrating: false }));
 vi.mock('../store/authStore', () => ({
   useAuthStore: (selector) =>
-    selector({ isAuthenticated: auth.isAuthenticated, isHydrating: auth.isHydrating }),
+    selector({
+      isAuthenticated: auth.isAuthenticated,
+      isHydrating: auth.isHydrating,
+    }),
 }));
 
 const renderRoutes = () => {
   const router = createMemoryRouter(
     [
       { path: '/', element: <div>Home Page</div> },
-      { element: <GuestRoute />, children: [{ path: '/login', element: <div>Login</div> }] },
+      {
+        element: <GuestRoute />,
+        children: [{ path: '/login', element: <div>Login</div> }],
+      },
     ],
-    { initialEntries: ['/login'] },
+    { initialEntries: ['/login'] }
   );
   return render(<RouterProvider router={router} />);
 };

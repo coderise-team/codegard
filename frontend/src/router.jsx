@@ -10,13 +10,14 @@ export const router = createBrowserRouter([
     element: <GuestRoute />,
     children: [
       { path: '/login', element: <AuthPage key="login" mode="login" /> },
-      { path: '/register', element: <AuthPage key="register" mode="register" /> },
+      {
+        path: '/register',
+        element: <AuthPage key="register" mode="register" />,
+      },
     ],
   },
   {
     element: <PrivateRoute />,
-    children: [
-      { path: '/', element: <HomePage /> },
-    ],
+    children: [{ path: '/', element: <HomePage /> }],
   },
 ]);

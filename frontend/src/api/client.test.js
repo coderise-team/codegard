@@ -70,7 +70,7 @@ describe('response interceptor (401 refresh)', () => {
 
     expect(axiosPost).toHaveBeenCalledWith(
       expect.stringContaining('/users/token/refresh/'),
-      { refresh: 'r0' },
+      { refresh: 'r0' }
     );
     expect(localStorage.getItem('access')).toBe('newA');
     expect(config.headers.Authorization).toBe('Bearer newA');
@@ -80,32 +80,51 @@ describe('response interceptor (401 refresh)', () => {
 
   it('does not refresh on auth endpoints', async () => {
     localStorage.setItem('refresh', 'r0');
-    const error = { config: { url: 'users/login/', headers: {} }, response: { status: 401 } };
+    const error = {
+      config: { url: 'users/login/', headers: {} },
+      response: { status: 401 },
+    };
 
     await expect(onRejected(error)).rejects.toBe(error);
     expect(axiosPost).not.toHaveBeenCalled();
   });
 
   it('does not refresh without a refresh token', async () => {
-    const error = { config: { url: 'problems/', headers: {} }, response: { status: 401 } };
+    const error = {
+      config: { url: 'problems/', headers: {} },
+      response: { status: 401 },
+    };
 
     await expect(onRejected(error)).rejects.toBe(error);
     expect(axiosPost).not.toHaveBeenCalled();
   });
 
   it('passes non-401 errors through untouched', async () => {
-    const error = { config: { url: 'problems/', headers: {} }, response: { status: 500 } };
+    const error = {
+      config: { url: 'problems/', headers: {} },
+      response: { status: 500 },
+    };
     await expect(onRejected(error)).rejects.toBe(error);
   });
 
   it('shares a single refresh across concurrent 401s', async () => {
     localStorage.setItem('refresh', 'r0');
     let resolvePost;
-    axiosPost.mockReturnValue(new Promise((res) => { resolvePost = res; }));
+    axiosPost.mockReturnValue(
+      new Promise((res) => {
+        resolvePost = res;
+      })
+    );
     mockClient.mockResolvedValue({ data: 'ok' });
 
-    const p1 = onRejected({ config: { url: 'a/', headers: {} }, response: { status: 401 } });
-    const p2 = onRejected({ config: { url: 'b/', headers: {} }, response: { status: 401 } });
+    const p1 = onRejected({
+      config: { url: 'a/', headers: {} },
+      response: { status: 401 },
+    });
+    const p2 = onRejected({
+      config: { url: 'b/', headers: {} },
+      response: { status: 401 },
+    });
     resolvePost({ data: { access: 'A', refresh: 'R' } });
     await Promise.all([p1, p2]);
 
@@ -119,7 +138,10 @@ describe('response interceptor (401 refresh)', () => {
     // Already on /login so the redirect branch is skipped (avoids jsdom navigation).
     window.history.pushState({}, '', '/login');
 
-    const error = { config: { url: 'problems/', headers: {} }, response: { status: 401 } };
+    const error = {
+      config: { url: 'problems/', headers: {} },
+      response: { status: 401 },
+    };
     await expect(onRejected(error)).rejects.toThrow('refresh failed');
 
     expect(tokenStorage.getAccess()).toBeNull();

@@ -14,7 +14,11 @@ describe('auth API', () => {
   it('register posts credentials and returns the response body', async () => {
     post.mockResolvedValue({ data: { access: 'a', refresh: 'r' } });
 
-    const data = await register({ username: 'u', email: 'e@x.io', password: 'p' });
+    const data = await register({
+      username: 'u',
+      email: 'e@x.io',
+      password: 'p',
+    });
 
     expect(post).toHaveBeenCalledWith('users/register/', {
       username: 'u',
@@ -38,7 +42,10 @@ describe('auth API', () => {
 
     const data = await login({ username: 'u', password: 'p' });
 
-    expect(post).toHaveBeenCalledWith('users/login/', { username: 'u', password: 'p' });
+    expect(post).toHaveBeenCalledWith('users/login/', {
+      username: 'u',
+      password: 'p',
+    });
     expect(data).toEqual({ access: 'a', refresh: 'r' });
   });
 
@@ -47,7 +54,9 @@ describe('auth API', () => {
 
     const data = await refresh('r1');
 
-    expect(post).toHaveBeenCalledWith('users/token/refresh/', { refresh: 'r1' });
+    expect(post).toHaveBeenCalledWith('users/token/refresh/', {
+      refresh: 'r1',
+    });
     expect(data).toEqual({ access: 'a2', refresh: 'r2' });
   });
 

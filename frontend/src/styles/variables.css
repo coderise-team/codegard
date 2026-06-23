@@ -6,54 +6,54 @@
    ============================================================= */
 :root {
   /* Backgrounds / surfaces */
-  --bg:      #0D0F14;
-  --card:    #13161F;
-  --card-2:  #171B26;
-  --border:  #1E2232;
-  --border-2:#262B3D;
+  --bg: #0d0f14;
+  --card: #13161f;
+  --card-2: #171b26;
+  --border: #1e2232;
+  --border-2: #262b3d;
 
   /* Accent — violet (default) */
-  --gold:     #A78BFA;
-  --gold-hi:  #C4B5FD;
+  --gold: #a78bfa;
+  --gold-hi: #c4b5fd;
   --gold-soft: color-mix(in srgb, var(--gold) 14%, transparent);
   --gold-line: color-mix(in srgb, var(--gold) 38%, transparent);
-  --accent-glow:   color-mix(in srgb, var(--gold) 30%, transparent);
+  --accent-glow: color-mix(in srgb, var(--gold) 30%, transparent);
   --accent-glow-2: color-mix(in srgb, var(--gold) 18%, transparent);
 
   /* Primary button hover — violet → fuchsia */
-  --btn-lo-h: #7C3AED;
-  --btn-hi-h: #E879F9;
+  --btn-lo-h: #7c3aed;
+  --btn-hi-h: #e879f9;
 
   /* Verdicts */
-  --ac:      #22C55E;
-  --wa:      #EF4444;
-  --tle:     #F97316;
-  --ac-soft:  rgba(34,  197, 94,  .12);
-  --wa-soft:  rgba(239, 68,  68,  .12);
-  --tle-soft: rgba(249, 115, 22,  .12);
+  --ac: #22c55e;
+  --wa: #ef4444;
+  --tle: #f97316;
+  --ac-soft: rgba(34, 197, 94, 0.12);
+  --wa-soft: rgba(239, 68, 68, 0.12);
+  --tle-soft: rgba(249, 115, 22, 0.12);
 
   /* Text */
-  --fg:  #E8EAF0;
-  --fg2: #6B7280;
-  --fg3: #444B5C;
+  --fg: #e8eaf0;
+  --fg2: #6b7280;
+  --fg3: #444b5c;
 
   /* Fonts */
-  --ui:   "IBM Plex Sans", system-ui, -apple-system, sans-serif;
-  --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --ui: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 
   /* Shape */
-  --r:    10px;
+  --r: 10px;
   --r-sm: 7px;
 
   /* Spacing — compact default */
-  --pad:      14px;
-  --gap:      10px;
+  --pad: 14px;
+  --gap: 10px;
   --topbar-h: 50px;
 }
 
 /* Comfortable — optional, add data-density="comfortable" to <body> */
-[data-density="comfortable"] {
-  --pad:      22px;
-  --gap:      16px;
+[data-density='comfortable'] {
+  --pad: 22px;
+  --gap: 16px;
   --topbar-h: 56px;
 }

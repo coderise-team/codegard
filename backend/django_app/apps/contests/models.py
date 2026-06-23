@@ -10,6 +10,7 @@ class Contest(models.Model):
         FINISHED = "finished", "Finished"
 
     title = models.CharField(max_length=255)
+    subtitle = models.CharField(max_length=255, blank=True, default="")
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     problems = models.ManyToManyField(
@@ -90,6 +91,16 @@ class ContestScore(models.Model):
         null=True,
         blank=True,
         help_text="Time of last AC submission — used for tiebreaking.",
+    )
+    rating_delta = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Net rating change for this contest (filled by the ELO flow).",
+    )
+    rating_after = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="User's rating after this contest (filled by the ELO flow).",
     )
     updated_at = models.DateTimeField(auto_now=True)
 

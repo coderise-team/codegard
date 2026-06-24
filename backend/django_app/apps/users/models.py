@@ -17,6 +17,8 @@ class User(AbstractUser):
     avatar = models.ImageField(upload_to=user_avatar_upload_to, blank=True, null=True)
     bio = models.TextField(blank=True, null=True)
     elo_rating = models.IntegerField(default=1200, blank=False, null=False)
+    max_rating = models.IntegerField(default=1200)
+
 
 
 class EloHistory(models.Model):

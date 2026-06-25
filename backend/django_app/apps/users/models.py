@@ -26,37 +26,15 @@ class EloHistory(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="elo_history",
-        verbose_name="Пользователь",
     )
-    contest = models.ForeignKey(
-        "contests.Contest",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="elo_changes",
-        verbose_name="Конкурс",
-    )
-    opponent = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="elo_opponent_history",
-        verbose_name="Оппонент",
-    )
-    old_rating = models.IntegerField(verbose_name="Рейтинг до")
-    new_rating = models.IntegerField(verbose_name="Рейтинг после")
-    delta = models.IntegerField(verbose_name="Изменение рейтинга")
-
-    timestamp = models.DateTimeField(auto_now_add=True, verbose_name="Дата изменения")
+    rating = models.IntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ["-timestamp"]
-        verbose_name = "История ELO"
-        verbose_name_plural = "История ELO"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["user", "-created_at"]),
+        ]
 
     def __str__(self):
-        return (
-            f"{self.user.username}: {self.old_rating} -> "
-            f"{self.new_rating} ({self.delta:+d})"
-        )
+        return f"{self.user.username}: {self.rating} ({self.created_at:%Y-%m-%d})"

@@ -35,6 +35,7 @@ class ContestSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "title",
+            "subtitle",
             "start_time",
             "end_time",
             "status",
@@ -83,6 +84,7 @@ class ContestWriteSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "title",
+            "subtitle",
             "start_time",
             "end_time",
             "problems",
@@ -119,4 +121,35 @@ class LeaderboardEntrySerializer(serializers.ModelSerializer):
 
     def get_rank(self, obj):
         # Rank is injected via annotated queryset in the view
+        return getattr(obj, "rank", None)
+
+
+# PERSONAL CONTEST DATA SERIALIZERS
+
+
+class MyContestHistorySerializer(serializers.ModelSerializer):
+    """One past-contest row for the PastContests block (from a ContestScore)."""
+
+    id = serializers.IntegerField(source="contest.id", read_only=True)
+    title = serializers.CharField(source="contest.title", read_only=True)
+    subtitle = serializers.CharField(source="contest.subtitle", read_only=True)
+    end_time = serializers.DateTimeField(source="contest.end_time", read_only=True)
+    solved = serializers.IntegerField(source="solved_count", read_only=True)
+    rank = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ContestScore
+        fields = [
+            "id",
+            "title",
+            "subtitle",
+            "end_time",
+            "rank",
+            "solved",
+            "rating_delta",
+            "rating_after",
+        ]
+
+    def get_rank(self, obj):
+        # Rank is injected by the view (1-based position in the leaderboard).
         return getattr(obj, "rank", None)

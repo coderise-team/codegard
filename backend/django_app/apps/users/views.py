@@ -1,22 +1,41 @@
 import json
+from datetime import timedelta
 
 from apps.contests.models import Contest
-from apps.users.models import User
-from apps.users.services import calculate_elo
+from apps.submissions.models import Submission
+from django.db.models import Count
+from django.db.models.functions import TruncDate
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from rest_framework import status
+from rest_framework.generics import RetrieveAPIView
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
+from rest_framework_simplejwt.views import TokenObtainPairView
 from sorl.thumbnail import get_thumbnail
 
-from .serializers import AvatarUploadSerializer, UserRegisterSerializer
+from .models import EloHistory, User
+from .serializers import (
+    AvatarUploadSerializer,
+    EloHistorySerializer,
+    EmailOrUsernameTokenObtainSerializer,
+    UserMeSerializer,
+    UserRegisterSerializer,
+    UserSerializer,
+)
+from .services import calculate_elo
+
+# Number of days included in a user's submission activity timeline.
+ACTIVITY_WINDOW_DAYS = 365
 
 
 class RegisterView(APIView):
+    """Register a new user and immediately issue JWT tokens."""
+
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -26,7 +45,6 @@ class RegisterView(APIView):
             refresh = RefreshToken.for_user(user)
             return Response(
                 {
-                    "user": serializer.data,
                     "access": str(refresh.access_token),
                     "refresh": str(refresh),
                 },
@@ -60,12 +78,13 @@ class AvatarUploadView(APIView):
 
 
 class LogoutView(APIView):
-    permission_classes = [AllowAny]
+    """Blacklist a refresh token and log out the authenticated user."""
+
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         try:
-            refresh_token = request.data["refresh"]
-            token = RefreshToken(refresh_token)
+            token = RefreshToken(request.data["refresh"])
             token.blacklist()
             return Response(status=status.HTTP_205_RESET_CONTENT)
 
@@ -82,7 +101,61 @@ class LogoutView(APIView):
             )
 
 
+class LoginView(TokenObtainPairView):
+    """Issue JWT tokens using either username or email credentials."""
+
+    serializer_class = EmailOrUsernameTokenObtainSerializer
+
+
+class UserActivityView(APIView):
+    """Return per-day submission counts for the last 365 days."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, user_id: int):
+        get_object_or_404(User, pk=user_id)
+        since = timezone.now() - timedelta(days=ACTIVITY_WINDOW_DAYS)
+        rows = (
+            Submission.objects.filter(user_id=user_id, created_at__gte=since)
+            .annotate(day=TruncDate("created_at"))
+            .values("day")
+            .annotate(count=Count("id"))
+            .order_by("day")
+        )
+        # Sparse: only days that actually have submissions are returned.
+        data = {row["day"].isoformat(): row["count"] for row in rows}
+        return Response(data)
+
+
+class UserEloHistoryView(APIView):
+    """
+    ELO rating change history for a user, for a Dashboard rating sparkline.
+
+    GET /api/users/{username}/elo-history/ -> list of ELO changes oldest-first
+    (chronological), so the frontend can plot the rating over time directly.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, username: str):
+        user = get_object_or_404(User, username=username)
+        history = EloHistory.objects.filter(user=user).order_by("created_at")
+        return Response(EloHistorySerializer(history, many=True).data)
+
+
+class UserDetailView(RetrieveAPIView):
+    """GET /api/users/{username}/ — public profile incl. rank from elo_rating."""
+
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = "username"
+    lookup_url_kwarg = "username"
+
+
 def finish_contest_view(request, contest_id):
+    """Finish a contest and update participants' ELO ratings."""
+
     contest = get_object_or_404(Contest, id=contest_id)
 
     if request.method == "POST":
@@ -105,3 +178,13 @@ def finish_contest_view(request, contest_id):
     calculate_elo(winner=user_winner, loser=user_loser, contest=contest)
 
     return JsonResponse({"status": "success"})
+
+
+class MeView(RetrieveAPIView):
+    """Return the authenticated user's profile."""
+
+    serializer_class = UserMeSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user

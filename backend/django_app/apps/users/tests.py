@@ -14,16 +14,19 @@ User = get_user_model()
 
 @pytest.fixture
 def client():
+    """DRF API client used for authentication endpoint tests."""
+
     return APIClient()
 
 
 @pytest.fixture
 def user_data():
+    """Default payload for user registration tests."""
+
     return {
         "username": "testuser",
         "email": "test@mail.com",
         "password": "testpass123",
-        "password2": "testpass123",
     }
 
 
@@ -36,9 +39,15 @@ def test_register_success(client, user_data):
 
 
 @pytest.mark.django_db
-def test_register_wrong_password(client, user_data):
-    user_data["password2"] = "wrongpassword"
-    response = client.post("/api/users/register/", user_data, format="json")
+def test_register_weak_password(client, user_data):
+    user_data["password"] = "123"
+
+    response = client.post(
+        "/api/users/register/",
+        user_data,
+        format="json",
+    )
+
     assert response.status_code == 400
 
 
@@ -142,6 +151,9 @@ def test_logout_success(client, user_data):
     )
 
     refresh = login.data["refresh"]
+    access = login.data["access"]
+
+    client.credentials(HTTP_AUTHORIZATION=f"Bearer {access}")
 
     response = client.post(
         "/api/users/logout/",
@@ -153,26 +165,47 @@ def test_logout_success(client, user_data):
 
 
 @pytest.mark.django_db
-def test_logout_invalid_token(client):
+def test_logout_invalid_token(client, user_data):
+    client.post("/api/users/register/", user_data, format="json")
+    login = client.post(
+        "/api/users/login/",
+        {"username": "testuser", "password": "testpass123"},
+        format="json",
+    )
+    client.credentials(HTTP_AUTHORIZATION=f"Bearer {login.data['access']}")
+
     response = client.post(
-        "/api/users/logout/", {"refresh": "wrong_refresh"}, format="json"
+        "/api/users/logout/",
+        {"refresh": "wrong_refresh"},
+        format="json",
     )
     assert response.status_code == 400
 
 
 @pytest.mark.django_db
-def test_logout_without_token(client):
+def test_logout_without_token(client, user_data):
+    client.post("/api/users/register/", user_data, format="json")
+    login = client.post(
+        "/api/users/login/",
+        {"username": "testuser", "password": "testpass123"},
+        format="json",
+    )
+    client.credentials(HTTP_AUTHORIZATION=f"Bearer {login.data['access']}")
+
     response = client.post(
         "/api/users/logout/",
         {},
         format="json",
     )
-
     assert response.status_code == 400
 
 
 class EloRatingTestCase(TestCase):
+    """Tests ELO rating updates and history creation."""
+
     def setUp(self):
+        """Create two players and a contest for ELO calculations."""
+
         self.user1 = User.objects.create_user(
             username="qwerty",
             email="p1@test.com",
@@ -201,17 +234,17 @@ class EloRatingTestCase(TestCase):
         self.winner = self.user1
         self.loser = self.user2
 
-    def test_equal_players_match(self):
+    def test_equal_players_gain_and_lose_16_points(self):
         calculate_elo(
             winner=self.first_player, loser=self.second_player, contest=self.match
         )
         self.winner.refresh_from_db()
-        self.second_player.refresh_from_db()  # Фиксим: обязательно обновляем из базы!
+        self.second_player.refresh_from_db()
 
         self.assertEqual(self.winner.elo_rating, 1216)
         self.assertEqual(self.second_player.elo_rating, 1184)
 
-    def test_upset_match(self):
+    def test_lower_rated_player_gains_more_points_after_upset(self):
         self.first_player.elo_rating = 1000
         self.second_player.elo_rating = 1600
         self.first_player.save()
@@ -224,7 +257,7 @@ class EloRatingTestCase(TestCase):
 
         self.assertTrue(self.first_player.elo_rating > 1030)
 
-    def test_history_logging(self):
+    def test_calculate_elo_creates_history_entries(self):
         calculate_elo(
             winner=self.first_player, loser=self.second_player, contest=self.contest
         )
@@ -232,16 +265,12 @@ class EloRatingTestCase(TestCase):
         self.assertEqual(EloHistory.objects.count(), 2)
 
         win_hist = EloHistory.objects.get(user=self.first_player)
-        self.assertEqual(win_hist.old_rating, 1200)
-        self.assertEqual(win_hist.new_rating, 1216)
-        self.assertEqual(win_hist.delta, 16)
+        self.assertEqual(win_hist.rating, 1216)
 
         loss_hist = EloHistory.objects.get(user=self.second_player)
-        self.assertEqual(loss_hist.old_rating, 1200)
-        self.assertEqual(loss_hist.new_rating, 1184)
-        self.assertEqual(loss_hist.delta, -16)
+        self.assertEqual(loss_hist.rating, 1184)
 
-    def test_calculate_elo_success(self):
+    def test_calculate_elo_updates_ratings_and_history(self):
         self.user1.elo_rating = 1000
         self.user2.elo_rating = 1000
 
@@ -259,29 +288,21 @@ class EloRatingTestCase(TestCase):
         self.assertTrue(self.user1.elo_rating > old_winner_rating)
         self.assertTrue(self.user2.elo_rating < old_loser_rating)
 
-        history_count = EloHistory.objects.filter(contest=self.contest).count()
+        history_count = EloHistory.objects.filter(
+            user__in=[self.user1, self.user2]
+        ).count()
         self.assertEqual(history_count, 2)
 
-        winner_history = EloHistory.objects.filter(
-            user=self.user1, contest=self.contest
-        ).first()
-        loser_history = EloHistory.objects.filter(
-            user=self.user2, contest=self.contest
-        ).first()
+        winner_history = EloHistory.objects.filter(user=self.user1).first()
+        loser_history = EloHistory.objects.filter(user=self.user2).first()
 
         self.assertIsNotNone(winner_history)
         self.assertIsNotNone(loser_history)
 
-        self.assertEqual(winner_history.old_rating, old_winner_rating)
-        self.assertEqual(winner_history.new_rating, self.user1.elo_rating)
-        self.assertEqual(
-            winner_history.delta, self.user1.elo_rating - old_winner_rating
-        )
-        self.assertTrue(winner_history.delta > 0)
+        self.assertEqual(winner_history.rating, self.user1.elo_rating)
+        self.assertTrue(winner_history.rating > old_winner_rating)
 
-        self.assertEqual(loser_history.old_rating, old_loser_rating)
-        self.assertEqual(loser_history.new_rating, self.user2.elo_rating)
-        self.assertEqual(loser_history.delta, self.user2.elo_rating - old_loser_rating)
-        self.assertTrue(loser_history.delta < 0)
+        self.assertEqual(loser_history.rating, self.user2.elo_rating)
+        self.assertTrue(loser_history.rating < old_loser_rating)
 
         self.assertTrue(len(str(winner_history)) > 0)

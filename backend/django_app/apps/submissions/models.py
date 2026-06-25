@@ -56,10 +56,25 @@ class Submission(models.Model):
         blank=True,
         help_text="Memory used in megabytes.",
     )
+    stderr = models.TextField(
+        null=True,
+        blank=True,
+        help_text="Captured stderr of the user's program (RE/CE diagnostics).",
+    )
+    error_message = models.TextField(
+        null=True,
+        blank=True,
+        help_text="Internal judge error message if the run failed before a verdict.",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ["-created_at"]
+        indexes = [
+            # Speeds up the activity-heatmap query (filter by user + created_at
+            # range, group by day) and any per-user submission lookups.
+            models.Index(fields=["user", "created_at"]),
+        ]
 
     def __str__(self):
         verdict = self.verdict or "Pending"

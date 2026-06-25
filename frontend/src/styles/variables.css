@@ -1,0 +1,59 @@
+/* =============================================================
+   Codegard — Design Tokens
+   Variables are historically named --gold*, but hold
+   a violet accent. Do not rename.
+   To change the theme — update --gold and --gold-hi here.
+   ============================================================= */
+:root {
+  /* Backgrounds / surfaces */
+  --bg: #0d0f14;
+  --card: #13161f;
+  --card-2: #171b26;
+  --border: #1e2232;
+  --border-2: #262b3d;
+
+  /* Accent — violet (default) */
+  --gold: #a78bfa;
+  --gold-hi: #c4b5fd;
+  --gold-soft: color-mix(in srgb, var(--gold) 14%, transparent);
+  --gold-line: color-mix(in srgb, var(--gold) 38%, transparent);
+  --accent-glow: color-mix(in srgb, var(--gold) 30%, transparent);
+  --accent-glow-2: color-mix(in srgb, var(--gold) 18%, transparent);
+
+  /* Primary button hover — violet → fuchsia */
+  --btn-lo-h: #7c3aed;
+  --btn-hi-h: #e879f9;
+
+  /* Verdicts */
+  --ac: #22c55e;
+  --wa: #ef4444;
+  --tle: #f97316;
+  --ac-soft: rgba(34, 197, 94, 0.12);
+  --wa-soft: rgba(239, 68, 68, 0.12);
+  --tle-soft: rgba(249, 115, 22, 0.12);
+
+  /* Text */
+  --fg: #e8eaf0;
+  --fg2: #6b7280;
+  --fg3: #444b5c;
+
+  /* Fonts */
+  --ui: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* Shape */
+  --r: 10px;
+  --r-sm: 7px;
+
+  /* Spacing — compact default */
+  --pad: 14px;
+  --gap: 10px;
+  --topbar-h: 50px;
+}
+
+/* Comfortable — optional, add data-density="comfortable" to <body> */
+[data-density='comfortable'] {
+  --pad: 22px;
+  --gap: 16px;
+  --topbar-h: 56px;
+}

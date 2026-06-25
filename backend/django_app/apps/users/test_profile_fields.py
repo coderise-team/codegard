@@ -46,8 +46,12 @@ def test_global_rank_ties_share_place(client, django_user_model):
     b = django_user_model.objects.create_user(
         username="b", email="b@test.com", password="pass", elo_rating=1800
     )
-    ra = client.get(reverse("users:user-detail", args=[a.username])).json()["globalRank"]
-    rb = client.get(reverse("users:user-detail", args=[b.username])).json()["globalRank"]
+    ra = client.get(reverse("users:user-detail", args=[a.username])).json()[
+        "globalRank"
+    ]
+    rb = client.get(reverse("users:user-detail", args=[b.username])).json()[
+        "globalRank"
+    ]
     assert ra == rb == 1
 
 
@@ -56,7 +60,9 @@ def test_next_tier_middle(client, django_user_model):
     user = django_user_model.objects.create_user(
         username="m", email="m@test.com", password="pass", elo_rating=1850
     )
-    nt = client.get(reverse("users:user-detail", args=[user.username])).json()["nextTier"]
+    nt = client.get(reverse("users:user-detail", args=[user.username])).json()[
+        "nextTier"
+    ]
     assert nt == {"name": "Grandmaster", "floor": 2000, "ceil": 2200}
 
 
@@ -65,5 +71,7 @@ def test_next_tier_top_is_null(client, django_user_model):
     user = django_user_model.objects.create_user(
         username="k", email="k@test.com", password="pass", elo_rating=2500
     )
-    nt = client.get(reverse("users:user-detail", args=[user.username])).json()["nextTier"]
+    nt = client.get(reverse("users:user-detail", args=[user.username])).json()[
+        "nextTier"
+    ]
     assert nt is None

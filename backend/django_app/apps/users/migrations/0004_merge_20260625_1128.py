@@ -4,11 +4,9 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('users', '0003_slim_elohistory_for_sparkline'),
-        ('users', '0003_user_max_rating'),
+        ("users", "0003_slim_elohistory_for_sparkline"),
+        ("users", "0003_user_max_rating"),
     ]
 
-    operations = [
-    ]
+    operations = []

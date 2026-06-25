@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('users', '0002_alter_user_elo_rating_elohistory'),
+        ("users", "0002_alter_user_elo_rating_elohistory"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='user',
-            name='max_rating',
+            model_name="user",
+            name="max_rating",
             field=models.IntegerField(default=1200),
         ),
     ]

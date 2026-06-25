@@ -20,7 +20,6 @@ class User(AbstractUser):
     max_rating = models.IntegerField(default=1200)
 
 
-
 class EloHistory(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,

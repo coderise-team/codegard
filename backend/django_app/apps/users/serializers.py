@@ -11,7 +11,7 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from .models import EloHistory, User
-from .services import get_rank, RANK_THRESHOLDS
+from .services import RANK_THRESHOLDS, get_rank
 
 # Avatar upload constants
 MAX_AVATAR_SIZE_BYTES = 5 * 1024 * 1024
@@ -90,6 +90,7 @@ class UserSerializer(serializers.ModelSerializer):
         floor = tiers[nxt][0]
         ceil = tiers[nxt + 1][0] if nxt + 1 < len(tiers) else None
         return {"name": name, "floor": floor, "ceil": ceil}
+
 
 class EloHistorySerializer(serializers.ModelSerializer):
     """One ELO change entry for the rating-history endpoint (sparkline data)."""

@@ -1,3 +1,5 @@
+from apps.submissions.models import Submission
+from django.db.models import Count, Q
 from rest_framework import filters, viewsets
 from rest_framework.permissions import IsAdminUser, IsAuthenticatedOrReadOnly
 
@@ -17,7 +19,7 @@ class ProblemViewSet(viewsets.ModelViewSet):
     DELETE /api/problems/{id}/     — delete problem (admin only)
     """
 
-    queryset = Problem.objects.prefetch_related("test_cases").all()
+    queryset = Problem.objects.prefetch_related("test_cases", "tags").all()
     filter_backends = [filters.SearchFilter]
     search_fields = ["title"]
 
@@ -36,4 +38,13 @@ class ProblemViewSet(viewsets.ModelViewSet):
         difficulty = self.request.query_params.get("difficulty")
         if difficulty in ["easy", "medium", "hard"]:
             queryset = queryset.filter(difficulty=difficulty)
+        # Acceptance counters in one pass - both counts over the same 'submissions'
+        # relation, so it's a single JOIN with on fan-out (no distinct needed).
+        queryset = queryset.annotate(
+            total_submissions=Count("submissions"),
+            ac_submissions=Count(
+                "submissions",
+                filter=Q(submissions__verdict=Submission.Verdict.AC),
+            ),
+        )
         return queryset

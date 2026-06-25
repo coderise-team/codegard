@@ -177,6 +177,7 @@ class TestProblemCreate:
             "difficulty": "medium",
             "time_limit": 2000,
             "memory_limit": 512,
+            "tags": ["Math"],
         }
         response = admin_client.post(url, data, format="json")
         assert response.status_code == status.HTTP_201_CREATED
@@ -194,6 +195,7 @@ class TestProblemCreate:
                 {"input": "1 2", "expected_output": "3", "is_hidden": False},
                 {"input": "5 5", "expected_output": "10", "is_hidden": True},
             ],
+            "tags": ["Math"],
         }
         response = admin_client.post(url, data, format="json")
         assert response.status_code == status.HTTP_201_CREATED

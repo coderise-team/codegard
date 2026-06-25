@@ -55,7 +55,7 @@ class ProblemSerializer(serializers.ModelSerializer):
             return TestCasePublicSerializer(qs, many=True).data
 
     def get_acceptance(self, obj) -> float:
-        total = getattr(obj, "total_submission", 0) or 0
+        total = getattr(obj, "total_submissions", 0) or 0
         if total == 0:
             return 0.0
         ac = getattr(obj, "ac_submissions", 0) or 0
@@ -82,7 +82,7 @@ class ProblemWriteSerializer(serializers.ModelSerializer):
             "time_limit",
             "memory_limit",
             "test_cases",
-            "tags"
+            "tags",
         ]
 
     def _set_tags(self, problem, tag_names):
@@ -95,13 +95,17 @@ class ProblemWriteSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         test_cases_data = validated_data.pop("test_cases", [])
+        tag_names = validated_data.pop("tags", [])
+
         problem = Problem.objects.create(**validated_data)
         for tc in test_cases_data:
             TestCase.objects.create(problem=problem, **tc)
+        self._set_tags(problem, tag_names)
         return problem
 
     def update(self, instance, validated_data):
         test_cases_data = validated_data.pop("test_cases", None)
+        tag_names = validated_data.pop("tags", None)
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
@@ -111,5 +115,8 @@ class ProblemWriteSerializer(serializers.ModelSerializer):
             instance.test_cases.all().delete()
             for tc in test_cases_data:
                 TestCase.objects.create(problem=instance, **tc)
+
+        if tag_names is not None:
+            self._set_tags(instance, tag_names)
 
         return instance

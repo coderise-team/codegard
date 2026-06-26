@@ -39,7 +39,7 @@ class ProblemViewSet(viewsets.ModelViewSet):
         if difficulty in ["easy", "medium", "hard"]:
             queryset = queryset.filter(difficulty=difficulty)
         # Acceptance counters in one pass - both counts over the same 'submissions'
-        # relation, so it's a single JOIN with on fan-out (no distinct needed).
+        # relation, so it's a single JOIN with no fan-out (no distinct needed).
         queryset = queryset.annotate(
             total_submissions=Count("submissions"),
             ac_submissions=Count(

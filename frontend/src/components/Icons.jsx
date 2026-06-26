@@ -3,8 +3,6 @@
 //   <Icons.clock size={16} />
 //   const { clock: ClockIcon } = Icons
 
-import React from 'react';
-
 const Ic = ({ d, size = 16, sw = 1.75, fill = 'none', style, ...p }) => (
   <svg
     width={size}

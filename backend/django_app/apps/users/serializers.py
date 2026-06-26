@@ -11,7 +11,7 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from .models import EloHistory, User
-from .services import get_rank
+from .services import RANK_THRESHOLDS, get_rank
 
 # Avatar upload constants
 MAX_AVATAR_SIZE_BYTES = 5 * 1024 * 1024
@@ -54,13 +54,42 @@ class UserSerializer(serializers.ModelSerializer):
     """Public user representation with rank computed on the fly from elo_rating."""
 
     rank = serializers.SerializerMethodField()
+    maxRating = serializers.IntegerField(source="max_rating", read_only=True)
+    globalRank = serializers.SerializerMethodField()
+    nextTier = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ["username", "elo_rating", "rank", "avatar", "bio"]
+        fields = [
+            "username",
+            "elo_rating",
+            "rank",
+            "avatar",
+            "bio",
+            "maxRating",
+            "globalRank",
+            "nextTier",
+        ]
 
     def get_rank(self, obj) -> str:
         return get_rank(obj.elo_rating)
+
+    def get_globalRank(self, obj) -> int:
+        return User.objects.filter(elo_rating__gt=obj.elo_rating).count() + 1
+
+    def get_nextTier(self, obj):
+        tiers = list(reversed(RANK_THRESHOLDS))
+        current = 0
+        for i, (floor, _name) in enumerate(tiers):
+            if obj.elo_rating >= floor:
+                current = i
+        nxt = current + 1
+        if nxt >= len(tiers):
+            return None
+        name = tiers[nxt][1]
+        floor = tiers[nxt][0]
+        ceil = tiers[nxt + 1][0] if nxt + 1 < len(tiers) else None
+        return {"name": name, "floor": floor, "ceil": ceil}
 
 
 class EloHistorySerializer(serializers.ModelSerializer):

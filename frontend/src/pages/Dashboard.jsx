@@ -9,29 +9,27 @@ import ActivityHeatmap from '../components/dashboard/ActivityHeatmap';
 import DailyChallenge from '../components/dashboard/DailyChallenge';
 import UpcomingContests from '../components/dashboard/UpcomingContests';
 import PastContests from '../components/dashboard/PastContests';
+import { useCurrentUser } from '../hooks/useCurrentUser';
 import './Dashboard.css';
 
 /**
  * Dashboard — main page (SWAP layout, compact density, violet accent).
- *
- * Props:
- *   data — CODEGARD_HOME object (mock data or real API response)
- *
- * Example with React Router:
- *   <Route path="/dashboard" element={<Dashboard data={homeData} />} />
+ * Each block fetches its own data; the shell user comes from useCurrentUser.
  */
-export default function Dashboard({ data }) {
+export default function Dashboard() {
+  const user = useCurrentUser();
+
   return (
     <div className="dash" data-density="compact">
-      <Sidebar user={data.user} />
+      <Sidebar user={user} />
 
       <div className="main">
-        <Navbar user={data.user} title="Dashboard" />
+        <Navbar user={user} title="Dashboard" />
 
         <div className="canvas scroll">
           <div className="canvas-in">
             <div className="hello">
-              <h1>Welcome back, <b>{data.user.handle}</b></h1>
+              <h1>Welcome back, <b>{user?.username}</b></h1>
             </div>
 
             <div className="lay-swap">

@@ -5,10 +5,6 @@ import Dashboard from './pages/Dashboard';
 import PrivateRoute from './components/PrivateRoute';
 import GuestRoute from './components/GuestRoute';
 
-// STUB: temporary mock fixture until each block is wired to the real API.
-// Remove together with frontend/src/data/homeData.js before merge.
-import homeData from './data/homeData';
-
 export const router = createBrowserRouter([
   {
     element: <GuestRoute />,
@@ -22,6 +18,6 @@ export const router = createBrowserRouter([
   },
   {
     element: <PrivateRoute />,
-    children: [{ path: '/', element: <Dashboard data={homeData} /> }],
+    children: [{ path: '/', element: <Dashboard /> }],
   },
 ]);

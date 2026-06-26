@@ -4,7 +4,7 @@ import Icons from '../Icons';
  * Navbar — top dashboard bar (breadcrumb, search, notifications, user).
  *
  * Props:
- *   user  — { handle, rating, rank, initials }
+ *   user  — { username, initials }
  *   title — breadcrumb string (e.g. "Dashboard")
  */
 export default function Navbar({ user, title = 'Dashboard' }) {
@@ -26,10 +26,9 @@ export default function Navbar({ user, title = 'Dashboard' }) {
 
       <div className="user-chip">
         <div className="meta">
-          <div className="handle">{user.handle}</div>
-          <div className="rating">{user.rating} · {user.rank}</div>
+          <div className="handle">{user?.username}</div>
         </div>
-        <div className="avatar">{user.initials}</div>
+        <div className="avatar">{user?.initials}</div>
       </div>
     </header>
   );

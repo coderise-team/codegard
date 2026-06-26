@@ -20,7 +20,7 @@ const linkClass = ({ isActive }) => `nav-link${isActive ? ' is-active' : ''}`;
  * Sidebar — left navigation panel.
  *
  * Props:
- *   user — { handle, rating, initials }  (bottom mini card)
+ *   user — { username, initials }  (bottom mini card)
  */
 export default function Sidebar({ user }) {
   return (
@@ -61,10 +61,9 @@ export default function Sidebar({ user }) {
         })}
 
         <div className="nav-mini">
-          <div className="avatar">{user.initials}</div>
+          <div className="avatar">{user?.initials}</div>
           <div className="mid">
-            <div className="h">{user.handle}</div>
-            <div className="r">{user.rating}</div>
+            <div className="h">{user?.username}</div>
           </div>
         </div>
       </div>

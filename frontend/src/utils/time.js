@@ -25,3 +25,29 @@ export function formatDate(iso) {
     day: 'numeric',
   });
 }
+
+// Seconds remaining until an ISO timestamp (never negative).
+export function secondsUntil(iso) {
+  return Math.max(0, Math.floor((new Date(iso).getTime() - Date.now()) / 1000));
+}
+
+// Formats a number of seconds as a countdown, e.g. "1d 02:05:09" or "00:04:41".
+export function fmtCountdown(total) {
+  if (total < 0) total = 0;
+  const d = Math.floor(total / 86400);
+  const h = Math.floor((total % 86400) / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = total % 60;
+  const p = (n) => String(n).padStart(2, '0');
+  return (d > 0 ? `${d}d ` : '') + `${p(h)}:${p(m)}:${p(s)}`;
+}
+
+// Compact duration between two ISO timestamps, e.g. "2h", "1h 30m", "45m".
+export function formatDuration(startIso, endIso) {
+  const minutes = Math.round((new Date(endIso) - new Date(startIso)) / 60000);
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  if (h && m) return `${h}h ${m}m`;
+  if (h) return `${h}h`;
+  return `${m}m`;
+}

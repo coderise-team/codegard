@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import Sidebar from '../components/layout/Sidebar';
 import Navbar from '../components/layout/Navbar';
 import ProfileCard from '../components/dashboard/ProfileCard';
@@ -22,29 +21,6 @@ import './Dashboard.css';
  *   <Route path="/dashboard" element={<Dashboard data={homeData} />} />
  */
 export default function Dashboard({ data }) {
-  // Contest state. Mock value is 'soon'; in production the backend
-  // derives this from contest start/end timestamps. 'live' | 'soon' | 'none'.
-  const contestState = 'soon';
-
-  // Live countdown — tick both the live clock and the time-to-start.
-  const [remaining, setRemaining] = useState(data.contest.remaining);
-  const [startsIn, setStartsIn] = useState(data.contest.startsIn);
-  useEffect(() => {
-    const id = setInterval(() => {
-      setRemaining((s) => (s > 0 ? s - 1 : 0));
-      setStartsIn((s) => (s > 0 ? s - 1 : 0));
-    }, 1000);
-    return () => clearInterval(id);
-  }, []);
-
-  // Registration state (hero CTA + upcoming rows).
-  const [heroReg, setHeroReg] = useState(false);
-  const [regMap, setRegMap] = useState({});
-  const toggleReg = (i) =>
-    setRegMap((m) => ({ ...m, [i]: !(m[i] ?? data.upcoming[i].registered) }));
-
-  const contest = { ...data.contest, startsIn };
-
   return (
     <div className="dash" data-density="compact">
       <Sidebar user={data.user} />
@@ -61,13 +37,7 @@ export default function Dashboard({ data }) {
             <div className="lay-swap">
               <div className="top-band">
                 <ProfileCard />
-                <ContestHero
-                  contest={contest}
-                  state={contestState}
-                  remaining={remaining}
-                  registered={heroReg}
-                  onRegister={() => setHeroReg(true)}
-                />
+                <ContestHero />
               </div>
 
               <StatsStrip />
@@ -80,7 +50,7 @@ export default function Dashboard({ data }) {
                 </div>
                 <div className="col-rail">
                   <DailyChallenge daily={data.daily} />
-                  <UpcomingContests contests={data.upcoming} regMap={regMap} onToggleReg={toggleReg} />
+                  <UpcomingContests />
                   <PastContests />
                 </div>
               </div>

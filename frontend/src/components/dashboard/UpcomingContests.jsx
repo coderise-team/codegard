@@ -1,20 +1,43 @@
-import React from 'react';
 import Icons from '../Icons';
+import EmptyState from './EmptyState';
+import { useUpcomingContests } from '../../hooks/useUpcomingContests';
+import { joinContest, leaveContest } from '../../api/contests';
+import { formatDuration } from '../../utils/time';
+
+const MAX_ROWS = 4;
+
+const dayCell = (iso) => {
+  const d = new Date(iso);
+  return { d: d.getDate(), mo: d.toLocaleString('en', { month: 'short' }) };
+};
 
 /**
- * UpcomingContests — rail list of upcoming rounds with register toggle.
- *
- * Props:
- *   contests    — [{ name, round, startsIn, duration, registered, going }]
- *   regMap      — { [index]: boolean } registration overrides
- *   onToggleReg — (index: number) => void
+ * UpcomingContests — rail list of pending rounds with a register toggle.
+ * Register / Going call the join / leave endpoints, then refetch.
  */
-export default function UpcomingContests({ contests, regMap = {}, onToggleReg }) {
+export default function UpcomingContests() {
   const I = Icons;
-  const dayLabel = (secs) => {
-    const dd = new Date(Date.now() + secs * 1000);
-    return { d: dd.getDate(), mo: dd.toLocaleString('en', { month: 'short' }) };
+  const { data, loading, error, reload } = useUpcomingContests();
+
+  const toggle = async (c) => {
+    try {
+      if (c.is_joined) await leaveContest(c.id);
+      else await joinContest(c.id);
+      reload();
+    } catch {
+      // leave the row as-is on failure
+    }
   };
+
+  if (data && data.length === 0) {
+    return (
+      <EmptyState
+        icon="calendar"
+        title="No upcoming contests"
+        sub="New rounds will show up here once they are scheduled."
+      />
+    );
+  }
 
   return (
     <section className="card">
@@ -23,26 +46,38 @@ export default function UpcomingContests({ contests, regMap = {}, onToggleReg })
         <button className="more">Calendar <I.chevRight size={13} /></button>
       </div>
       <div className="card-bd flush">
-        {contests.map((c, i) => {
-          const reg = regMap[i] ?? c.registered;
-          const dl = dayLabel(c.startsIn);
-          return (
-            <div className="up-row" key={c.name}>
-              <div className="up-cal"><span className="d">{dl.d}</span><span className="mo">{dl.mo}</span></div>
-              <div className="um">
-                <div className="nm">{c.name}</div>
-                <div className="mt"><span>{c.round}</span><span>· {c.duration}</span></div>
+        {loading && <div className="list-msg">Loading…</div>}
+        {error && <div className="list-msg">Couldn’t load contests.</div>}
+        {data &&
+          data.slice(0, MAX_ROWS).map((c) => {
+            const dl = dayCell(c.start_time);
+            return (
+              <div className="up-row" key={c.id}>
+                <div className="up-cal">
+                  <span className="d">{dl.d}</span>
+                  <span className="mo">{dl.mo}</span>
+                </div>
+                <div className="um">
+                  <div className="nm">{c.title}</div>
+                  <div className="mt">
+                    <span>{c.subtitle}</span>
+                    <span>· {formatDuration(c.start_time, c.end_time)}</span>
+                  </div>
+                </div>
+                <div className="ua">
+                  {c.is_joined ? (
+                    <button className="reg-pill done" onClick={() => toggle(c)}>
+                      <I.checkBold size={13} /> Going
+                    </button>
+                  ) : (
+                    <button className="reg-pill go" onClick={() => toggle(c)}>
+                      <I.plus size={13} /> Register
+                    </button>
+                  )}
+                </div>
               </div>
-              <div className="ua">
-                {reg ? (
-                  <span className="reg-pill done"><I.checkBold size={13} /> Going</span>
-                ) : (
-                  <button className="reg-pill go" onClick={() => onToggleReg(i)}><I.plus size={13} /> Register</button>
-                )}
-              </div>
-            </div>
-          );
-        })}
+            );
+          })}
       </div>
     </section>
   );

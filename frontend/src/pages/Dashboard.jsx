@@ -81,7 +81,7 @@ export default function Dashboard({ data }) {
                 <div className="col-rail">
                   <DailyChallenge daily={data.daily} />
                   <UpcomingContests contests={data.upcoming} regMap={regMap} onToggleReg={toggleReg} />
-                  <PastContests items={data.pastContests} />
+                  <PastContests />
                 </div>
               </div>
             </div>

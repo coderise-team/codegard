@@ -17,3 +17,11 @@ export function timeAgo(iso) {
 
   return then.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
+
+// Short absolute date label, e.g. "May 28".
+export function formatDate(iso) {
+  return new Date(iso).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+  });
+}

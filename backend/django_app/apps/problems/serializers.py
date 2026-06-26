@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Problem, TestCase
+from .models import Problem, Tag, TestCase
 
 
 class TestCaseSerializer(serializers.ModelSerializer):
@@ -21,6 +21,8 @@ class ProblemSerializer(serializers.ModelSerializer):
     """List / retrieve serializer — shows only visible test cases to regular users."""
 
     test_cases = serializers.SerializerMethodField()
+    tags = serializers.SlugRelatedField(many=True, slug_field="name", read_only=True)
+    acceptance = serializers.SerializerMethodField()
 
     class Meta:
         model = Problem
@@ -31,6 +33,8 @@ class ProblemSerializer(serializers.ModelSerializer):
             "difficulty",
             "time_limit",
             "memory_limit",
+            "tags",
+            "acceptance",
             "test_cases",
             "created_at",
             "updated_at",
@@ -50,11 +54,23 @@ class ProblemSerializer(serializers.ModelSerializer):
             qs = obj.test_cases.filter(is_hidden=False)
             return TestCasePublicSerializer(qs, many=True).data
 
+    def get_acceptance(self, obj) -> float:
+        total = getattr(obj, "total_submissions", 0) or 0
+        if total == 0:
+            return 0.0
+        ac = getattr(obj, "ac_submissions", 0) or 0
+        return round(ac / total * 100, 1)
+
 
 class ProblemWriteSerializer(serializers.ModelSerializer):
     """Create / update serializer — accepts test_cases as nested input."""
 
     test_cases = TestCaseSerializer(many=True, required=False)
+    tags = serializers.ListField(
+        child=serializers.CharField(max_length=50),
+        min_length=1,
+        write_only=True,
+    )
 
     class Meta:
         model = Problem
@@ -66,17 +82,30 @@ class ProblemWriteSerializer(serializers.ModelSerializer):
             "time_limit",
             "memory_limit",
             "test_cases",
+            "tags",
         ]
+
+    def _set_tags(self, problem, tag_names):
+        tags = [
+            Tag.objects.get_or_create(name=name.strip())[0]
+            for name in tag_names
+            if name.strip()
+        ]
+        problem.tags.set(tags)
 
     def create(self, validated_data):
         test_cases_data = validated_data.pop("test_cases", [])
+        tag_names = validated_data.pop("tags", [])
+
         problem = Problem.objects.create(**validated_data)
         for tc in test_cases_data:
             TestCase.objects.create(problem=problem, **tc)
+        self._set_tags(problem, tag_names)
         return problem
 
     def update(self, instance, validated_data):
         test_cases_data = validated_data.pop("test_cases", None)
+        tag_names = validated_data.pop("tags", None)
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
@@ -86,5 +115,8 @@ class ProblemWriteSerializer(serializers.ModelSerializer):
             instance.test_cases.all().delete()
             for tc in test_cases_data:
                 TestCase.objects.create(problem=instance, **tc)
+
+        if tag_names is not None:
+            self._set_tags(instance, tag_names)
 
         return instance

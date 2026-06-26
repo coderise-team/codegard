@@ -11,8 +11,6 @@ export function useUserActivity(username) {
   useEffect(() => {
     if (!username) return undefined;
     let active = true;
-    setLoading(true);
-    setError(null);
     getUserActivity(username)
       .then((counts) => active && setData(counts))
       .catch((err) => active && setError(err))

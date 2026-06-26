@@ -10,8 +10,6 @@ export function useRecentSubmissions() {
 
   useEffect(() => {
     let active = true;
-    setLoading(true);
-    setError(null);
     getSubmissions()
       .then((subs) => active && setData(subs))
       .catch((err) => active && setError(err))

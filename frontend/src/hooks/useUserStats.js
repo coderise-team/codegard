@@ -11,8 +11,6 @@ export function useUserStats(username) {
   useEffect(() => {
     if (!username) return undefined;
     let active = true;
-    setLoading(true);
-    setError(null);
     getUserStats(username)
       .then((stats) => active && setData(stats))
       .catch((err) => active && setError(err))

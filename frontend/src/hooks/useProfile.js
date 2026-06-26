@@ -12,8 +12,6 @@ export function useProfile(username) {
   useEffect(() => {
     if (!username) return undefined;
     let active = true;
-    setLoading(true);
-    setError(null);
     Promise.all([getUser(username), getEloHistory(username)])
       .then(([user, history]) => active && setData({ user, history }))
       .catch((err) => active && setError(err))

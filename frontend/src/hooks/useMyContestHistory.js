@@ -10,8 +10,6 @@ export function useMyContestHistory() {
 
   useEffect(() => {
     let active = true;
-    setLoading(true);
-    setError(null);
     getMyContestHistory()
       .then((history) => active && setData(history))
       .catch((err) => active && setError(err))

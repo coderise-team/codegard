@@ -1,50 +1,41 @@
-import React from 'react';
+import { useMemo } from 'react';
 import Icons from '../Icons';
+import { useAuthStore } from '../../store/authStore';
+import { useProfile } from '../../hooks/useProfile';
 
-/** Gradient rating ring */
-function RatingRing({ user }) {
+/**
+ * Rating ring — center shows ELO + rank (real). The progress arc needs
+ * next-tier thresholds, which the backend doesn't expose yet, so only the
+ * track is drawn for now.
+ */
+function RatingRing({ rating, rank }) {
   const R = 86;
-  const C = 2 * Math.PI * R;
-  const { floor, ceil } = user.nextTier;
-  const frac = Math.max(0, Math.min(1, (user.rating - floor) / (ceil - floor)));
-  const off = C * (1 - frac);
-
   return (
     <div className="ring-wrap">
       <svg viewBox="0 0 200 200" aria-hidden="true">
-        <defs>
-          <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor="var(--gold-hi)" />
-            <stop offset="1" stopColor="var(--gold)" />
-          </linearGradient>
-        </defs>
         <circle className="track" cx="100" cy="100" r={R} strokeWidth="14" />
-        <circle
-          className="meter"
-          cx="100" cy="100" r={R}
-          strokeWidth="14"
-          strokeDasharray={C}
-          strokeDashoffset={off}
-        />
+        {/* STUB: progress arc disabled until tier thresholds are exposed. */}
       </svg>
       <div className="ring-center">
-        <div className="elo">{user.rating}</div>
+        <div className="elo">{rating}</div>
         <div className="lab">ELO Rating</div>
-        <div className="rk">{user.rank}</div>
+        <div className="rk">{rank}</div>
       </div>
     </div>
   );
 }
 
-/** Rating-history sparkline */
+/** Rating-history sparkline (oldest → newest). Needs at least 2 points. */
 function Sparkline({ history }) {
   const W = 300, H = 56, pad = 4;
-  const rs = history.map((h) => h.r);
+  const rs = history.map((h) => h.rating);
   const min = Math.min(...rs), max = Math.max(...rs);
   const span = max - min || 1;
   const x = (i) => pad + (i * (W - 2 * pad)) / (history.length - 1);
   const y = (r) => pad + (1 - (r - min) / span) * (H - 2 * pad);
-  const line = history.map((h, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)} ${y(h.r).toFixed(1)}`).join(' ');
+  const line = history
+    .map((h, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)} ${y(h.rating).toFixed(1)}`)
+    .join(' ');
   const area = `${line} L${x(history.length - 1).toFixed(1)} ${H} L${x(0).toFixed(1)} ${H} Z`;
   const last = history[history.length - 1];
 
@@ -63,22 +54,33 @@ function Sparkline({ history }) {
         </defs>
         <path className="ar" d={area} />
         <path className="ln" d={line} vectorEffect="non-scaling-stroke" />
-        <circle className="dot-now" cx={x(history.length - 1)} cy={y(last.r)} r="3.5" vectorEffect="non-scaling-stroke" />
+        <circle
+          className="dot-now"
+          cx={x(history.length - 1)}
+          cy={y(last.rating)}
+          r="3.5"
+          vectorEffect="non-scaling-stroke"
+        />
       </svg>
     </div>
   );
 }
 
 /**
- * ProfileCard — standing card with ELO ring, tier progress and sparkline.
- *
- * Props:
- *   user          — { handle, rating, rank, globalRank, maxRating, delta, nextTier:{ name, floor, ceil } }
- *   ratingHistory — [{ c, r, d }]  (oldest → newest)
+ * ProfileCard — the authenticated user's standing: ELO ring + rating sparkline.
+ * Global rank, max rating and tier progress need backend endpoints that don't
+ * exist yet and are shown as placeholders (see STUB notes).
  */
-export default function ProfileCard({ user, ratingHistory }) {
-  const up = user.delta >= 0;
-  const { floor, ceil, name } = user.nextTier;
+export default function ProfileCard() {
+  const username = useAuthStore((s) => s.user?.username);
+  const { data, loading, error } = useProfile(username);
+
+  // Delta = change between the two latest rating points (computed on the fly).
+  const delta = useMemo(() => {
+    const h = data?.history;
+    if (!h || h.length < 2) return null;
+    return h[h.length - 1].rating - h[h.length - 2].rating;
+  }, [data]);
 
   return (
     <section className="card profile">
@@ -86,28 +88,33 @@ export default function ProfileCard({ user, ratingHistory }) {
         <span className="t"><Icons.award size={16} /> Your standing</span>
         <button className="more">Profile <Icons.chevRight size={13} /></button>
       </div>
-      <div className="card-bd">
-        <RatingRing user={user} />
-        <div className="pmeta">
-          <div className="pname">
-            {user.handle}
-            <span className={`pdelta ${up ? 'up' : 'down'}`}>
-              {up ? <Icons.arrowUp size={12} /> : <Icons.arrowDown size={12} />}
-              {up ? '+' : ''}{user.delta}
-            </span>
-          </div>
-          <div className="ptier">Global rank <b>#{user.globalRank}</b> · max {user.maxRating}</div>
 
-          <div className="tier-bar">
-            <div className="lbl"><span>{floor}</span><span>→ {name}</span><span>{ceil}</span></div>
-            <div className="track">
-              <div className="fill" style={{ width: `${((user.rating - floor) / (ceil - floor)) * 100}%` }} />
+      {loading && <div className="list-msg">Loading…</div>}
+      {error && <div className="list-msg">Couldn’t load profile.</div>}
+
+      {data && (
+        <div className="card-bd">
+          <RatingRing rating={data.user.elo_rating} rank={data.user.rank} />
+          <div className="pmeta">
+            <div className="pname">
+              {data.user.username}
+              {delta != null && (
+                <span className={`pdelta ${delta >= 0 ? 'up' : 'down'}`}>
+                  {delta >= 0 ? <Icons.arrowUp size={12} /> : <Icons.arrowDown size={12} />}
+                  {delta >= 0 ? '+' : ''}{delta}
+                </span>
+              )}
             </div>
-          </div>
 
-          <Sparkline history={ratingHistory} />
+            {/* STUB: global rank + max rating not exposed by the backend yet. */}
+            <div className="ptier">Global rank <b>—</b> · max —</div>
+
+            {/* STUB: tier progress bar needs a tier-thresholds endpoint. */}
+
+            {data.history.length >= 2 && <Sparkline history={data.history} />}
+          </div>
         </div>
-      </div>
+      )}
     </section>
   );
 }

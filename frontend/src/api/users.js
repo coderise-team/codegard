@@ -12,3 +12,15 @@ export async function getUserActivity(username) {
   const { data } = await client.get(`users/${username}/activity/`);
   return data;
 }
+
+// GET users/{username}/ -> { username, elo_rating, rank, avatar, bio }
+export async function getUser(username) {
+  const { data } = await client.get(`users/${username}/`);
+  return data;
+}
+
+// GET users/{username}/elo-history/ -> [{ rating, created_at }] oldest-first
+export async function getEloHistory(username) {
+  const { data } = await client.get(`users/${username}/elo-history/`);
+  return data;
+}

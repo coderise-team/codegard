@@ -60,7 +60,7 @@ export default function Dashboard({ data }) {
 
             <div className="lay-swap">
               <div className="top-band">
-                <ProfileCard user={data.user} ratingHistory={data.ratingHistory} />
+                <ProfileCard />
                 <ContestHero
                   contest={contest}
                   state={contestState}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Sidebar from '../components/layout/Sidebar';
 import Navbar from '../components/layout/Navbar';
 import ProfileCard from '../components/dashboard/ProfileCard';
@@ -22,8 +22,6 @@ import './Dashboard.css';
  *   <Route path="/dashboard" element={<Dashboard data={homeData} />} />
  */
 export default function Dashboard({ data }) {
-  const [activeNav, setActiveNav] = useState('home');
-
   // Contest state. Mock value is 'soon'; in production the backend
   // derives this from contest start/end timestamps. 'live' | 'soon' | 'none'.
   const contestState = 'soon';
@@ -49,13 +47,7 @@ export default function Dashboard({ data }) {
 
   return (
     <div className="dash" data-density="compact">
-      <Sidebar
-        nav={data.nav}
-        navSub={data.navSub}
-        user={data.user}
-        activeId={activeNav}
-        onNav={setActiveNav}
-      />
+      <Sidebar user={data.user} />
 
       <div className="main">
         <Navbar user={data.user} title="Dashboard" />

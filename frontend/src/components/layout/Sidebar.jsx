@@ -1,55 +1,63 @@
 import React from 'react';
+import { Link, NavLink } from 'react-router-dom';
 import Icons from '../Icons';
+
+// App navigation — static app sections, not API data.
+// Pages other than Dashboard are delivered in their own PRs.
+const NAV = [
+  { label: 'Dashboard', icon: 'home', to: '/' },
+  { label: 'Problems', icon: 'grid', to: '/problems' },
+  { label: 'Contests', icon: 'trophy', to: '/contests' },
+  { label: 'Standings', icon: 'chart', to: '/standings' },
+  { label: 'Practice', icon: 'target', to: '/practice' },
+  { label: 'Groups', icon: 'users', to: '/groups' },
+];
+
+const NAV_SUB = [{ label: 'Settings', icon: 'settings', to: '/settings' }];
+
+const linkClass = ({ isActive }) => `nav-link${isActive ? ' is-active' : ''}`;
 
 /**
  * Sidebar — left navigation panel.
  *
  * Props:
- *   nav      — array { id, label, icon }  (main items)
- *   navSub   — array { id, label, icon }  (bottom items: Settings, etc.)
- *   user     — { handle, rating, initials }
- *   activeId — id of the active item
- *   onNav    — (id: string) => void
+ *   user — { handle, rating, initials }  (bottom mini card)
  */
-export default function Sidebar({ nav, navSub, user, activeId, onNav }) {
+export default function Sidebar({ user }) {
   return (
     <aside className="side">
       <div className="side-top">
-        <a href="/" className="logo">
+        <Link to="/" className="logo">
           <span className="mark">C</span>
           <span><span className="wm-a">Code</span><span className="wm-b">gard</span></span>
-        </a>
+        </Link>
       </div>
 
       <nav className="side-nav scroll">
-        {nav.map((item) => {
+        {NAV.map((item) => {
           const Icon = Icons[item.icon] || Icons.grid;
           return (
-            <button
-              key={item.id}
-              className={`nav-link${activeId === item.id ? ' is-active' : ''}`}
-              onClick={() => onNav(item.id)}
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.to === '/'}
+              className={linkClass}
             >
               <Icon size={18} />
               <span>{item.label}</span>
-              {item.id === 'contests' && <span className="nl-tag">LIVE</span>}
-            </button>
+            </NavLink>
           );
         })}
       </nav>
 
       <div className="side-foot">
-        {navSub.map((item) => {
+        {NAV_SUB.map((item) => {
           const Icon = Icons[item.icon] || Icons.settings;
           return (
-            <button
-              key={item.id}
-              className={`nav-link${activeId === item.id ? ' is-active' : ''}`}
-              onClick={() => onNav(item.id)}
-            >
+            <NavLink key={item.to} to={item.to} className={linkClass}>
               <Icon size={18} />
               <span>{item.label}</span>
-            </button>
+            </NavLink>
           );
         })}
 

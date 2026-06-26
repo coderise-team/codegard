@@ -30,6 +30,10 @@ CELERY_BEAT_SCHEDULE = {
         "task": "apps.contests.tasks.update_contest_statuses",
         "schedule": crontab(minute="*"),
     },
+    "contests-apply-ratings-every-minute": {
+        "task": "apps.contests.tasks.apply_finished_contest_ratings",
+        "schedule": crontab(minute="*"),
+    },
     "flush-expired-jwt-tokens-daily": {
         "task": "apps.users.tasks.flush_expired_jwt_tokens",
         "schedule": crontab(minute=0, hour=3),

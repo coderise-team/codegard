@@ -28,6 +28,10 @@ class Contest(models.Model):
         choices=Status.choices,
         default=Status.PENDING,
     )
+    rating_applied = models.BooleanField(
+        default=False,
+        help_text="Whether ELO ratings have been awarded for this contest.",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -44,12 +44,12 @@ export default function Dashboard({ data }) {
 
               <div className="cols">
                 <div className="col-main">
-                  <Recommended items={data.recommended} />
+                  <Recommended />
                   <RecentSubmissions />
                   <ActivityHeatmap />
                 </div>
                 <div className="col-rail">
-                  <DailyChallenge daily={data.daily} />
+                  <DailyChallenge />
                   <UpcomingContests />
                   <PastContests />
                 </div>

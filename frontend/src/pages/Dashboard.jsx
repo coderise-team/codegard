@@ -70,7 +70,7 @@ export default function Dashboard({ data }) {
                 />
               </div>
 
-              <StatsStrip stats={data.quickStats} />
+              <StatsStrip />
 
               <div className="cols">
                 <div className="col-main">

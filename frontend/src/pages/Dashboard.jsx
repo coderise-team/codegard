@@ -75,7 +75,7 @@ export default function Dashboard({ data }) {
               <div className="cols">
                 <div className="col-main">
                   <Recommended items={data.recommended} />
-                  <RecentSubmissions submissions={data.recentSubmissions} />
+                  <RecentSubmissions />
                   <ActivityHeatmap activity={data.activity} />
                 </div>
                 <div className="col-rail">

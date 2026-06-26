@@ -265,6 +265,9 @@
 .subtab .mono { font-family: var(--mono); font-size: 12px; color: var(--fg2); font-variant-numeric: tabular-nums; }
 .subtab .st-when { color: var(--fg2); font-size: 12px; }
 
+/* loading / error placeholder inside list cards */
+.list-msg { padding: 26px var(--pad); text-align: center; color: var(--fg2); font-size: 13px; }
+
 /* past-contest row specifics */
 .crow .cc-rank { font-family: var(--mono); font-weight: 700; font-size: 14px; font-variant-numeric: tabular-nums; }
 .crow .cc-delta { font-family: var(--mono); font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }

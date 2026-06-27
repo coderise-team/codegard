@@ -89,6 +89,46 @@ def update_contest_statuses(self) -> dict:
     return summary
 
 
+@shared_task(bind=True)
+def apply_finished_contest_ratings(self) -> dict:
+    """
+    Periodic task: award ELO for finished contests not yet rated.
+
+    Filters by `end_time` (not `status`, which is a cache) and `rating_applied`,
+    oldest first. Each contest is isolated in its own try so one bad contest
+    doesn't sink the batch.
+    """
+    from .services import apply_contest_ratings
+
+    logger.info(
+        "[apply_finished_contest_ratings] started | task_id=%s", self.request.id
+    )
+
+    now = timezone.now()
+    contests = list(
+        Contest.objects.filter(end_time__lt=now, rating_applied=False).order_by(
+            "end_time"
+        )
+    )
+
+    processed = 0
+    participants_updated = 0
+    for contest in contests:
+        try:
+            participants_updated += apply_contest_ratings(contest)
+            processed += 1
+        except Exception:
+            logger.exception("Failed to apply ratings for contest %s", contest.pk)
+
+    summary = {
+        "contests_processed": processed,
+        "participants_updated": participants_updated,
+    }
+    logger.info("apply_finished_contest_ratings %s", summary)
+    logger.info("[apply_finished_contest_ratings] done | task_id=%s", self.request.id)
+    return summary
+
+
 def _broadcast_contest_ended(contest_ids: list[int]) -> None:
     from apps.realtime.events import ContestEvents
     from asgiref.sync import async_to_sync

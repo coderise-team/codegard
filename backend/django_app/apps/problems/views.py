@@ -1,10 +1,23 @@
 from apps.submissions.models import Submission
 from django.db.models import Count, Q
 from rest_framework import filters, viewsets
-from rest_framework.permissions import IsAdminUser, IsAuthenticatedOrReadOnly
+from rest_framework.decorators import action
+from rest_framework.permissions import (
+    IsAdminUser,
+    IsAuthenticated,
+    IsAuthenticatedOrReadOnly,
+)
+from rest_framework import Response
 
 from .models import Problem
-from .serializers import ProblemSerializer, ProblemWriteSerializer
+from .serializers import (
+    ProblemSerializer,
+    ProblemWriteSerializer,
+    RecommendedProblemSerializer,
+)
+
+RECOMMENDED_PER_DIFFICULTY = 2
+RECOMMENDED_TOTAL = 6
 
 
 class ProblemViewSet(viewsets.ModelViewSet):
@@ -48,3 +61,51 @@ class ProblemViewSet(viewsets.ModelViewSet):
             ),
         )
         return queryset
+
+    @action(detail=False, methods=["get"])
+    def recommended(self, request):
+        """Up to 6 unsolved problems for the current user: 2 random per
+        difficulty, backfilled across difficulties, ordered easy -> hard.
+        Unsolved = the user has no AC for the problem.
+        """
+        user = request.user
+
+        solved_ids = (
+            Submission.objects.filter(user=user, verdict=Submission.Verdict.AC)
+            .values_list("problem", flat=True)
+            .distinct()
+        )
+
+        unsolved = (
+            Problem.objects.exclude(id__in=solved_ids)
+            .prefetch_related("tags")
+            .annotate(
+                total_submissions=Count("submissions"),
+                ac_submissions=Count(
+                    "submissions",
+                    filter=Q(submissions__verdict=Submission.Verdict.AC),
+                ),
+            )
+        )
+
+        picked = []
+        picked_ids = set()
+        for difficulty in ("easy", "medium", "hard"):
+            chunk = list(
+                unsolved.filter(difficulty=difficulty).order_by("?")[
+                    :RECOMMENDED_PER_DIFFICULTY
+                ]
+            )
+            picked.extend(chunk)
+            picked_ids.update(p.id for p in chunk)
+
+        shortfall = RECOMMENDED_TOTAL - len(picked)
+        if shortfall > 0:
+            picked.extend(
+                unsolved.exclude(id__in=picked_ids).order_by("?")[:shortfall]
+            )
+
+        difficulty_rank = {"easy": 0, "medium": 1, "hard": 2}
+        picked.sort(key=lambda p: difficulty_rank[p.difficulty])
+        serializer = RecommendedProblemSerializer(picked, many=True)
+        return Response(serializer.data)

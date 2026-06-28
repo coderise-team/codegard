@@ -7,7 +7,7 @@ from rest_framework.permissions import (
     IsAuthenticated,
     IsAuthenticatedOrReadOnly,
 )
-from rest_framework import Response
+from rest_framework.response import Response
 
 from .models import Problem
 from .serializers import (
@@ -39,6 +39,8 @@ class ProblemViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action in ["create", "update", "partial_update", "destroy"]:
             return [IsAdminUser()]
+        if self.action == "recommended":
+            return [IsAuthenticated()]
         return [IsAuthenticatedOrReadOnly()]
 
     def get_serializer_class(self):
@@ -101,9 +103,7 @@ class ProblemViewSet(viewsets.ModelViewSet):
 
         shortfall = RECOMMENDED_TOTAL - len(picked)
         if shortfall > 0:
-            picked.extend(
-                unsolved.exclude(id__in=picked_ids).order_by("?")[:shortfall]
-            )
+            picked.extend(unsolved.exclude(id__in=picked_ids).order_by("?")[:shortfall])
 
         difficulty_rank = {"easy": 0, "medium": 1, "hard": 2}
         picked.sort(key=lambda p: difficulty_rank[p.difficulty])

@@ -274,3 +274,110 @@ class TestSubmissionVerdict:
         url = reverse("submissions-detail", args=[submission.pk])
         response = auth_client.get(url)
         assert response.data["is_pending"] is False
+
+
+# ---------------------------------------------------------------------------
+# ?problem= filter (own submissions, scoped to one problem)
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture
+def problem2(db):
+    return Problem.objects.create(
+        title="Reverse String",
+        description="",
+        difficulty="easy",
+        time_limit=1000,
+        memory_limit=256,
+    )
+
+
+@pytest.mark.django_db
+class TestSubmissionProblemFilter:
+    def test_filters_by_problem(self, auth_client, user, problem, problem2):
+        mine = Submission.objects.create(
+            user=user, problem=problem, code="x", language="python"
+        )
+        Submission.objects.create(
+            user=user, problem=problem2, code="y", language="python"
+        )
+        url = reverse("submissions-list") + f"?problem={problem.pk}"
+        response = auth_client.get(url)
+        results = response.data.get("results", response.data)
+        assert [r["id"] for r in results] == [mine.pk]
+
+    def test_non_numeric_problem_is_ignored(self, auth_client, user, problem):
+        Submission.objects.create(
+            user=user, problem=problem, code="x", language="python"
+        )
+        response = auth_client.get(reverse("submissions-list") + "?problem=abc")
+        assert response.status_code == status.HTTP_200_OK
+        results = response.data.get("results", response.data)
+        assert len(results) == 1
+
+
+# ---------------------------------------------------------------------------
+# Public submissions by username (ProfilePage RecentSubmissions)
+# ---------------------------------------------------------------------------
+
+
+def _user_subs_url(username):
+    return reverse("users:user-submissions", args=[username])
+
+
+@pytest.mark.django_db
+class TestPublicSubmissions:
+    def test_requires_auth(self, api_client, user):
+        resp = api_client.get(_user_subs_url(user.username))
+        assert resp.status_code in (
+            status.HTTP_401_UNAUTHORIZED,
+            status.HTTP_403_FORBIDDEN,
+        )
+
+    def test_unknown_username_404(self, auth_client):
+        assert (
+            auth_client.get(_user_subs_url("ghost")).status_code
+            == status.HTTP_404_NOT_FOUND
+        )
+
+    def test_any_authenticated_sees_other_users_submissions(
+        self, auth_client, other_user, problem
+    ):
+        s = Submission.objects.create(
+            user=other_user, problem=problem, code="x", language="python"
+        )
+        data = auth_client.get(_user_subs_url(other_user.username)).json()
+        assert [row["id"] for row in data] == [s.pk]
+
+    def test_newest_first(self, auth_client, user, problem):
+        old = Submission.objects.create(
+            user=user, problem=problem, code="x", language="python"
+        )
+        new = Submission.objects.create(
+            user=user, problem=problem, code="y", language="python"
+        )
+        # Pin `old` back so ordering is deterministic (created_at is auto_now_add).
+        Submission.objects.filter(pk=old.pk).update(
+            created_at=timezone.now() - timedelta(hours=1)
+        )
+        data = auth_client.get(_user_subs_url(user.username)).json()
+        assert [row["id"] for row in data] == [new.pk, old.pk]
+
+    def test_code_is_not_exposed(self, auth_client, other_user, problem):
+        Submission.objects.create(
+            user=other_user, problem=problem, code="secret_source", language="python"
+        )
+        row = auth_client.get(_user_subs_url(other_user.username)).json()[0]
+        assert "code" not in row
+        assert "stderr" not in row
+        assert row["problem_title"] == "Two Sum"
+
+    def test_capped_at_limit(self, auth_client, user, problem):
+        from apps.users.views import RECENT_SUBMISSIONS_LIMIT
+
+        Submission.objects.bulk_create(
+            Submission(user=user, problem=problem, code="x", language="python")
+            for _ in range(RECENT_SUBMISSIONS_LIMIT + 5)
+        )
+        data = auth_client.get(_user_subs_url(user.username)).json()
+        assert len(data) == RECENT_SUBMISSIONS_LIMIT

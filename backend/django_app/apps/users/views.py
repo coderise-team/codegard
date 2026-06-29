@@ -31,6 +31,7 @@ ACTIVITY_WINDOW_DAYS = 365
 # Number of most-recent submissions returned for a public profile.
 RECENT_SUBMISSIONS_LIMIT = 15
 
+
 class RegisterView(APIView):
     """Register a new user and immediately issue JWT tokens."""
 
@@ -187,6 +188,7 @@ class UserStreakView(APIView):
         user = get_object_or_404(User, username=username)
         return Response(compute_streak(user))
 
+
 class UserSubmissionsView(APIView):
     """Latest submissions for a user, for the ProfilePage RecentSubmissions block.
 
@@ -227,4 +229,3 @@ class MeView(RetrieveAPIView):
 
     def get_object(self):
         return self.request.user
-

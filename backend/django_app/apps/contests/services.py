@@ -11,6 +11,9 @@ Formula:
 """
 
 from django.db import transaction
+from django.db.models import Count, IntegerField, OuterRef, Q, Subquery, Value
+from django.db.models.functions import Coalesce
+from django.utils import timezone
 
 from .models import Contest, ContestScore
 
@@ -98,6 +101,48 @@ def get_leaderboard(contest: Contest):
         ContestScore.objects.filter(contest=contest)
         .select_related("user")
         .order_by("-score", "penalty", "last_ac_at")
+    )
+
+
+def get_contest_history(user):
+    """
+    Annotated queryset of `user`'s finished contests, newest first, with `rank`.
+
+    "Finished" is by time (`contest__end_time < now`), not the cached `status`.
+    `rank` is computed in a single correlated subquery (no per-contest leaderboard
+    query / no N+1): rank = 1 + how many ContestScores in the same contest rank
+    strictly higher, using the exact leaderboard tie-break
+    (score DESC, penalty ASC, last_ac_at ASC).
+
+    Serialization is the view's job; this only prepares the queryset.
+    """
+    # Rows in the same contest that finish ABOVE this one (same tie-break as
+    # get_leaderboard). NULL last_ac_at compares as "not less than" (NULL __lt x
+    # is NULL → excluded), so a no-solve row never counts as higher on time.
+    higher = (
+        ContestScore.objects.filter(contest_id=OuterRef("contest_id"))
+        .filter(
+            Q(score__gt=OuterRef("score"))
+            | Q(score=OuterRef("score"), penalty__lt=OuterRef("penalty"))
+            | Q(
+                score=OuterRef("score"),
+                penalty=OuterRef("penalty"),
+                last_ac_at__lt=OuterRef("last_ac_at"),
+            )
+        )
+        .order_by()
+        .values("contest_id")
+        .annotate(c=Count("*"))
+        .values("c")
+    )
+
+    return (
+        ContestScore.objects.filter(user=user, contest__end_time__lt=timezone.now())
+        .select_related("contest")
+        .annotate(
+            rank=Coalesce(Subquery(higher, output_field=IntegerField()), Value(0)) + 1
+        )
+        .order_by("-contest__end_time")
     )
 
 

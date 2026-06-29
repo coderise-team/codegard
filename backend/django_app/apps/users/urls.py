@@ -12,6 +12,7 @@ from .views import (
     UserEloHistoryView,
     UserStatsView,
     UserStreakView,
+    UserSubmissionsView,
 )
 
 app_name = "users"
@@ -25,6 +26,11 @@ urlpatterns = [
     path("me/", MeView.as_view(), name="me"),
     path("<str:username>/activity/", UserActivityView.as_view(), name="user-activity"),
     path("<str:username>/stats/", UserStatsView.as_view(), name="user-stats"),
+    path(
+        "<str:username>/submissions/",
+        UserSubmissionsView.as_view(),
+        name="user-submissions",
+    ),
     path(
         "<str:username>/elo-history/",
         UserEloHistoryView.as_view(),

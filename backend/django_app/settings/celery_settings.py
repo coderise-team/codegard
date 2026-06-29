@@ -38,4 +38,8 @@ CELERY_BEAT_SCHEDULE = {
         "task": "apps.users.tasks.flush_expired_jwt_tokens",
         "schedule": crontab(minute=0, hour=3),
     },
+    "assign-daily-problem-hourly": {
+        "task": "apps.problems.tasks.assign_daily_problem",
+        "schedule": crontab(minute=0),
+    },
 }

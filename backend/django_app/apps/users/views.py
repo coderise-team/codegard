@@ -170,6 +170,22 @@ class UserEloHistoryView(APIView):
         return Response(EloHistorySerializer(history, many=True).data)
 
 
+class UserStreakView(APIView):
+    """Daily-challenge streak for a user, for the dashboard Daily challenge block.
+
+    GET /api/users/{username}/streak/ -> {current_streak, longest_streak, history}.
+    Any authenticated user can view anyone's streak (like stats/activity).
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, username: str):
+        from apps.problems.services import compute_streak
+
+        user = get_object_or_404(User, username=username)
+        return Response(compute_streak(user))
+
+
 class UserDetailView(RetrieveAPIView):
     """GET /api/users/{username}/ — public profile incl. rank from elo_rating."""
 

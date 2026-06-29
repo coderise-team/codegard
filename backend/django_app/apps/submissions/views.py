@@ -24,12 +24,15 @@ class SubmissionViewSet(
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # Users can only see their own submissions
-        return (
+        qs = (
             Submission.objects.select_related("problem", "contest")
             .filter(user=self.request.user)
             .order_by("-created_at")
         )
+        problem = self.request.query_params.get("problem")
+        if problem and problem.isdigit():
+            qs = qs.filter(problem_id=problem)
+        return qs
 
     def get_serializer_class(self):
         if self.action == "create":

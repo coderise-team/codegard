@@ -1,12 +1,5 @@
 import client from './client';
 
-// GET contests/my-history/ -> the authenticated user's finished contests,
-// newest first (plain list, not paginated).
-export async function getMyContestHistory() {
-  const { data } = await client.get('contests/my-history/');
-  return data;
-}
-
 // GET contests/?status=... -> paginated list; returns the results array.
 export async function getContests(params = {}) {
   const { data } = await client.get('contests/', { params });

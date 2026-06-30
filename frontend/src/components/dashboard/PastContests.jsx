@@ -1,6 +1,7 @@
 import Icons from '../Icons';
 import EmptyState from './EmptyState';
-import { useMyContestHistory } from '../../hooks/useMyContestHistory';
+import { useAuthStore } from '../../store/authStore';
+import { useContestHistory } from '../../hooks/useContestHistory';
 import { formatDate } from '../../utils/time';
 
 // Finished contests shown on the dashboard card.
@@ -12,7 +13,8 @@ const MAX_ROWS = 5;
  */
 export default function PastContests() {
   const I = Icons;
-  const { data, loading, error } = useMyContestHistory();
+  const username = useAuthStore((s) => s.user?.username);
+  const { data, loading, error } = useContestHistory(username);
 
   if (data && data.length === 0) {
     return (

@@ -33,3 +33,10 @@ export async function getStreak(username) {
   const { data } = await client.get(`users/${username}/streak/`);
   return data;
 }
+
+// GET users/{username}/contest-history/ -> finished contests, newest first
+// [{ id, title, subtitle, end_time, rank, solved, rating_delta, rating_after }]
+export async function getContestHistory(username) {
+  const { data } = await client.get(`users/${username}/contest-history/`);
+  return data;
+}

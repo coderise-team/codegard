@@ -11,6 +11,7 @@ from .views import (
     UserDetailView,
     UserEloHistoryView,
     UserStatsView,
+    UserStreakView,
 )
 
 app_name = "users"
@@ -29,6 +30,7 @@ urlpatterns = [
         UserEloHistoryView.as_view(),
         name="user-elo-history",
     ),
+    path("<str:username>/streak/", UserStreakView.as_view(), name="user-streak"),
     # Keep the bare detail route LAST so it doesn't shadow the more specific ones.
     path("<str:username>/", UserDetailView.as_view(), name="user-detail"),
 ]

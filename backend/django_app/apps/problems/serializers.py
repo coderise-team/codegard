@@ -3,6 +3,19 @@ from rest_framework import serializers
 from .models import Problem, Tag, TestCase
 
 
+def acceptance_from_annotations(obj) -> float:
+    """Global AC rate (%) from `total_submissions`/`ac_submissions` annotations.
+
+    Shared by ProblemSerializer and DailyProblemSerializer so the formula lives
+    in one place. The view must annotate both counts; missing/None reads as 0.
+    """
+    total = getattr(obj, "total_submissions", 0) or 0
+    if total == 0:
+        return 0.0
+    ac = getattr(obj, "ac_submissions", 0) or 0
+    return round(ac / total * 100, 1)
+
+
 class TestCaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = TestCase
@@ -55,11 +68,26 @@ class ProblemSerializer(serializers.ModelSerializer):
             return TestCasePublicSerializer(qs, many=True).data
 
     def get_acceptance(self, obj) -> float:
-        total = getattr(obj, "total_submissions", 0) or 0
-        if total == 0:
-            return 0.0
-        ac = getattr(obj, "ac_submissions", 0) or 0
-        return round(ac / total * 100, 1)
+        return acceptance_from_annotations(obj)
+
+
+class DailyProblemSerializer(serializers.ModelSerializer):
+    """Thin serializer for the daily challenge card — no description/test cases."""
+
+    tags = serializers.SlugRelatedField(many=True, slug_field="name", read_only=True)
+    acceptance = serializers.SerializerMethodField()
+    solved_today = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Problem
+        fields = ["id", "title", "difficulty", "tags", "acceptance", "solved_today"]
+
+    def get_acceptance(self, obj) -> float:
+        return acceptance_from_annotations(obj)
+
+    def get_solved_today(self, obj) -> bool:
+        # The view computes this with a single exists() and passes it in.
+        return self.context["solved_today"]
 
 
 class ProblemWriteSerializer(serializers.ModelSerializer):

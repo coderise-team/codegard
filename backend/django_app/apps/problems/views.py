@@ -164,4 +164,3 @@ class ProblemViewSet(viewsets.ModelViewSet):
         picked.sort(key=lambda p: difficulty_rank[p.difficulty])
         serializer = RecommendedProblemSerializer(picked, many=True)
         return Response(serializer.data)
-        

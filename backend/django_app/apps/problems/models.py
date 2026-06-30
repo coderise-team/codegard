@@ -1,6 +1,16 @@
 from django.db import models
 
 
+class Tag(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
+
 class Problem(models.Model):
     class Difficulty(models.TextChoices):
         EASY = "easy", "Easy"
@@ -22,6 +32,7 @@ class Problem(models.Model):
         help_text="Memory limit in megabytes",
         default=256,
     )
+    tags = models.ManyToManyField(Tag, related_name="problems")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -30,6 +41,31 @@ class Problem(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.difficulty})"
+
+
+class DailyProblem(models.Model):
+    """One problem assigned as the daily challenge for a calendar day (UTC).
+
+    Thin date->problem link, shared by all users. A row is created once per day
+    by the `assign_daily_problem` beat task; `unique` on `date` both indexes the
+    column and guarantees the task is idempotent (no duplicate days).
+    """
+
+    date = models.DateField(unique=True)
+    problem = models.ForeignKey(
+        Problem,
+        on_delete=models.PROTECT,
+        related_name="daily_assignments",
+        help_text="PROTECT: a problem that was ever a daily challenge can't be "
+        "deleted, so past streaks stay intact.",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-date"]
+
+    def __str__(self):
+        return f"{self.date}: {self.problem.title}"
 
 
 class TestCase(models.Model):

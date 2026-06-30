@@ -1,11 +1,8 @@
-import json
 from datetime import timedelta
 
-from apps.contests.models import Contest
 from apps.submissions.models import Submission
 from django.db.models import Count
 from django.db.models.functions import TruncDate
-from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import status
@@ -27,7 +24,6 @@ from .serializers import (
     UserRegisterSerializer,
     UserSerializer,
 )
-from .services import calculate_elo
 
 # Number of days included in a user's submission activity timeline.
 ACTIVITY_WINDOW_DAYS = 365
@@ -174,6 +170,22 @@ class UserEloHistoryView(APIView):
         return Response(EloHistorySerializer(history, many=True).data)
 
 
+class UserStreakView(APIView):
+    """Daily-challenge streak for a user, for the dashboard Daily challenge block.
+
+    GET /api/users/{username}/streak/ -> {current_streak, longest_streak, history}.
+    Any authenticated user can view anyone's streak (like stats/activity).
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, username: str):
+        from apps.problems.services import compute_streak
+
+        user = get_object_or_404(User, username=username)
+        return Response(compute_streak(user))
+
+
 class UserDetailView(RetrieveAPIView):
     """GET /api/users/{username}/ — public profile incl. rank from elo_rating."""
 
@@ -182,33 +194,6 @@ class UserDetailView(RetrieveAPIView):
     permission_classes = [IsAuthenticated]
     lookup_field = "username"
     lookup_url_kwarg = "username"
-
-
-def finish_contest_view(request, contest_id):
-    """Finish a contest and update participants' ELO ratings."""
-
-    contest = get_object_or_404(Contest, id=contest_id)
-
-    if request.method == "POST":
-        try:
-            data = json.loads(request.body)
-            winner_id = data.get("winner_id")
-            loser_id = data.get("loser_id")
-        except json.JSONDecodeError:
-            return JsonResponse({"error": "Invalid JSON"}, status=400)
-    else:
-        winner_id = request.GET.get("winner_id")
-        loser_id = request.GET.get("loser_id")
-
-    if not winner_id or not loser_id:
-        return JsonResponse({"error": "Missing winner_id or loser_id"}, status=400)
-
-    user_winner = get_object_or_404(User, id=winner_id)
-    user_loser = get_object_or_404(User, id=loser_id)
-
-    calculate_elo(winner=user_winner, loser=user_loser, contest=contest)
-
-    return JsonResponse({"status": "success"})
 
 
 class MeView(RetrieveAPIView):

@@ -85,6 +85,37 @@
 .tbar .user-chip .rating { font-size: 11.5px; color: var(--fg2); font-variant-numeric: tabular-nums; }
 .tbar .user-chip .avatar { width: 32px; height: 32px; }
 
+/* user menu — avatar chip becomes a dropdown trigger */
+.user-menu { position: relative; }
+.tbar .user-chip { background: none; border: 0; cursor: pointer; font: inherit; color: inherit;
+  padding: 4px 6px; border-radius: var(--r-sm); transition: .13s;
+  -webkit-tap-highlight-color: transparent; }
+.tbar .user-chip:hover { background: var(--card-2); }
+
+.user-pop {
+  position: absolute; top: calc(100% + 8px); right: 0; z-index: 60;
+  min-width: 210px; padding: 6px;
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--r-sm);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, .42);
+  display: flex; flex-direction: column; gap: 2px;
+  transform-origin: top right; animation: umPop .14s cubic-bezier(.2, .7, .3, 1);
+}
+@keyframes umPop { from { opacity: 0; transform: translateY(-6px) scale(.97); } }
+
+.um-item {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  padding: 9px 11px; border-radius: var(--r-sm);
+  background: none; border: 0; cursor: pointer; text-align: left; text-decoration: none;
+  color: var(--fg2); font-family: var(--ui); font-size: 13px; font-weight: 600; transition: .12s;
+  -webkit-tap-highlight-color: transparent;
+}
+.um-item svg { color: var(--fg3); flex: 0 0 auto; }
+.um-item:hover { background: var(--card-2); color: var(--fg); }
+.um-item:hover svg { color: var(--fg2); }
+.um-item.danger, .um-item.danger svg { color: var(--wa); }
+.um-item.danger:hover { background: var(--wa-soft); color: var(--wa); }
+.um-sep { height: 1px; background: var(--border); margin: 4px 2px; }
+
 /* ============================================================
    SCROLL SURFACE + LAYOUT WRAPPERS
    ============================================================ */

@@ -1,7 +1,8 @@
 import Icons from '../Icons';
+import UserMenu from './UserMenu';
 
 /**
- * Navbar — top dashboard bar (breadcrumb, search, notifications, user).
+ * Navbar — top dashboard bar (breadcrumb, search, user menu).
  *
  * Props:
  *   user        — { username, initials }
@@ -23,12 +24,7 @@ export default function Navbar({ user, title = 'Dashboard', onMenuClick }) {
         <span className="kbd">/</span>
       </div>
 
-      <div className="user-chip">
-        <div className="meta">
-          <div className="handle">{user?.username}</div>
-        </div>
-        <div className="avatar">{user?.initials}</div>
-      </div>
+      <UserMenu user={user} />
     </header>
   );
 }

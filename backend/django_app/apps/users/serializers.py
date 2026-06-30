@@ -86,10 +86,11 @@ class UserSerializer(serializers.ModelSerializer):
         nxt = current + 1
         if nxt >= len(tiers):
             return None
-        name = tiers[nxt][1]
-        floor = tiers[nxt][0]
-        ceil = tiers[nxt + 1][0] if nxt + 1 < len(tiers) else None
-        return {"name": name, "floor": floor, "ceil": ceil}
+        return {
+            "name": tiers[nxt][1],
+            "floor": tiers[current][0],
+            "ceil": tiers[nxt][0],
+        }
 
 
 class EloHistorySerializer(serializers.ModelSerializer):

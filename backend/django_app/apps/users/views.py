@@ -189,6 +189,24 @@ class UserStreakView(APIView):
         return Response(compute_streak(user))
 
 
+class UserContestHistoryView(APIView):
+    """Finished-contest history for a user, for the ProfilePage PastContests block.
+
+    GET /api/users/{username}/contest-history/ -> list, newest first.
+    Any authenticated user can view anyone's history (like stats/streak).
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, username: str):
+        from apps.contests.serializers import ContestHistorySerializer
+        from apps.contests.services import get_contest_history
+
+        user = get_object_or_404(User, username=username)
+        history = get_contest_history(user)
+        return Response(ContestHistorySerializer(history, many=True).data)
+
+
 class UserSubmissionsView(APIView):
     """Latest submissions for a user, for the ProfilePage RecentSubmissions block.
 

@@ -1,7 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom';
 
 import AuthPage from './pages/AuthPage';
-import HomePage from './pages/HomePage';
+import Dashboard from './pages/Dashboard';
 import PrivateRoute from './components/PrivateRoute';
 import GuestRoute from './components/GuestRoute';
 
@@ -18,6 +18,6 @@ export const router = createBrowserRouter([
   },
   {
     element: <PrivateRoute />,
-    children: [{ path: '/', element: <HomePage /> }],
+    children: [{ path: '/', element: <Dashboard /> }],
   },
 ]);

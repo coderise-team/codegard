@@ -1,7 +1,6 @@
 from collections import defaultdict
 
 from apps.submissions.models import Submission
-from django.utils import timezone
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import (
@@ -17,7 +16,6 @@ from .serializers import (
     ContestSerializer,
     ContestWriteSerializer,
     LeaderboardEntrySerializer,
-    MyContestHistorySerializer,
 )
 from .services import get_leaderboard
 
@@ -52,7 +50,7 @@ class ContestViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action in ["create", "update", "partial_update", "destroy"]:
             return [IsAdminUser()]
-        if self.action in ["join", "leave", "my_standing", "my_history"]:
+        if self.action in ["join", "leave", "my_standing"]:
             return [IsAuthenticated()]
         return [IsAuthenticatedOrReadOnly()]
 
@@ -194,25 +192,3 @@ class ContestViewSet(viewsets.ModelViewSet):
         return Response(
             {"rank": rank, "score": score, "solved": solved, "problems": problems}
         )
-
-    @action(
-        detail=False,
-        methods=["get"],
-        url_path="my-history",
-        permission_classes=[IsAuthenticated],
-    )
-    def my_history(self, request):
-        """GET /api/contests/my-history/ — my finished contests, newest first."""
-        # "Finished" by time, not by the cached `status` field (may be stale).
-        scores = list(
-            ContestScore.objects.filter(
-                user=request.user, contest__end_time__lt=timezone.now()
-            )
-            .select_related("contest")
-            .order_by("-contest__end_time")
-        )
-        for score in scores:
-            score.rank = _leaderboard_rank(score.contest, request.user.pk)
-
-        serializer = MyContestHistorySerializer(scores, many=True)
-        return Response(serializer.data)

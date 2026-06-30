@@ -148,3 +148,25 @@ class ProblemWriteSerializer(serializers.ModelSerializer):
             self._set_tags(instance, tag_names)
 
         return instance
+
+
+class RecommendedProblemSerializer(serializers.ModelSerializer):
+    """Slim problem representation for the dashboard Recommended block.
+
+    Reuses ProblemSerializer's acceptance logic: it reads the
+    total_submissions / ac_submissions annotations the view adds.
+    """
+
+    tags = serializers.SlugRelatedField(many=True, slug_field="name", read_only=True)
+    acceptance = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Problem
+        fields = ["id", "title", "difficulty", "tags", "acceptance"]
+
+    def get_acceptance(self, obj) -> float:
+        total = getattr(obj, "total_submissions", 0) or 0
+        if total == 0:
+            return 0.0
+        ac = getattr(obj, "ac_submissions", 0) or 0
+        return round(ac / total * 100, 1)

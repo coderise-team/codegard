@@ -1,3 +1,14 @@
 # Shell scripts must use LF so they run inside Linux containers,
 # regardless of core.autocrlf on the developer's machine.
 *.sh text eol=lf
+
+# Web sources are LF too, so Prettier (eol: lf) stays consistent across OSes
+# and Windows checkouts don't show spurious CRLF diffs.
+*.js   text eol=lf
+*.jsx  text eol=lf
+*.ts   text eol=lf
+*.tsx  text eol=lf
+*.css  text eol=lf
+*.html text eol=lf
+*.json text eol=lf
+*.md   text eol=lf

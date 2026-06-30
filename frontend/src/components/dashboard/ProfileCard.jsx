@@ -4,17 +4,33 @@ import { useAuthStore } from '../../store/authStore';
 import { useProfile } from '../../hooks/useProfile';
 
 /**
- * Rating ring — center shows ELO + rank (real). The progress arc needs
- * next-tier thresholds, which the backend doesn't expose yet, so only the
- * track is drawn for now.
+ * Rating ring — ELO + current rank in the center, with a progress arc toward
+ * the next tier around it. `frac` is the fill (0–1); it's 1 at the top tier.
  */
-function RatingRing({ rating, rank }) {
+function RatingRing({ rating, rank, frac }) {
   const R = 86;
+  const C = 2 * Math.PI * R;
+  const off = C * (1 - frac);
+
   return (
     <div className="ring-wrap">
       <svg viewBox="0 0 200 200" aria-hidden="true">
+        <defs>
+          <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stopColor="var(--gold-hi)" />
+            <stop offset="1" stopColor="var(--gold)" />
+          </linearGradient>
+        </defs>
         <circle className="track" cx="100" cy="100" r={R} strokeWidth="14" />
-        {/* STUB: progress arc disabled until tier thresholds are exposed. */}
+        <circle
+          className="meter"
+          cx="100"
+          cy="100"
+          r={R}
+          strokeWidth="14"
+          strokeDasharray={C}
+          strokeDashoffset={off}
+        />
       </svg>
       <div className="ring-center">
         <div className="elo">{rating}</div>
@@ -67,9 +83,8 @@ function Sparkline({ history }) {
 }
 
 /**
- * ProfileCard — the authenticated user's standing: ELO ring + rating sparkline.
- * Global rank, max rating and tier progress need backend endpoints that don't
- * exist yet and are shown as placeholders (see STUB notes).
+ * ProfileCard — the authenticated user's standing: ELO ring with progress to the
+ * next tier, global rank / max rating, a tier-progress bar and a rating sparkline.
  */
 export default function ProfileCard() {
   const username = useAuthStore((s) => s.user?.username);
@@ -80,6 +95,14 @@ export default function ProfileCard() {
     const h = data?.history;
     if (!h || h.length < 2) return null;
     return h[h.length - 1].rating - h[h.length - 2].rating;
+  }, [data]);
+
+  // Progress within the current tier band (0–1); full at the top tier (no next).
+  const frac = useMemo(() => {
+    const nt = data?.user?.nextTier;
+    if (!nt) return 1;
+    const f = (data.user.elo_rating - nt.floor) / (nt.ceil - nt.floor);
+    return Math.max(0, Math.min(1, f));
   }, [data]);
 
   return (
@@ -94,7 +117,7 @@ export default function ProfileCard() {
 
       {data && (
         <div className="card-bd">
-          <RatingRing rating={data.user.elo_rating} rank={data.user.rank} />
+          <RatingRing rating={data.user.elo_rating} rank={data.user.rank} frac={frac} />
           <div className="pmeta">
             <div className="pname">
               {data.user.username}
@@ -106,10 +129,22 @@ export default function ProfileCard() {
               )}
             </div>
 
-            {/* STUB: global rank + max rating not exposed by the backend yet. */}
-            <div className="ptier">Global rank <b>—</b> · max —</div>
+            <div className="ptier">
+              Global rank <b>#{data.user.globalRank}</b> · max {data.user.maxRating}
+            </div>
 
-            {/* STUB: tier progress bar needs a tier-thresholds endpoint. */}
+            {data.user.nextTier && (
+              <div className="tier-bar">
+                <div className="lbl">
+                  <span>{data.user.nextTier.floor}</span>
+                  <span>→ {data.user.nextTier.name}</span>
+                  <span>{data.user.nextTier.ceil}</span>
+                </div>
+                <div className="track">
+                  <div className="fill" style={{ width: `${frac * 100}%` }} />
+                </div>
+              </div>
+            )}
 
             {data.history.length >= 2 && <Sparkline history={data.history} />}
           </div>

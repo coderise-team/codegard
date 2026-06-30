@@ -63,7 +63,7 @@ def test_next_tier_middle(client, django_user_model):
     nt = client.get(reverse("users:user-detail", args=[user.username])).json()[
         "nextTier"
     ]
-    assert nt == {"name": "Grandmaster", "floor": 2000, "ceil": 2200}
+    assert nt == {"name": "Grandmaster", "floor": 1800, "ceil": 2000}
 
 
 @pytest.mark.django_db

@@ -23,11 +23,6 @@ export default function Navbar({ user, title = 'Dashboard', onMenuClick }) {
         <span className="kbd">/</span>
       </div>
 
-      <button className="icon-btn" title="Notifications">
-        <Icons.bell size={17} />
-        <span className="nd" />
-      </button>
-
       <div className="user-chip">
         <div className="meta">
           <div className="handle">{user?.username}</div>

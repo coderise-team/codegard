@@ -8,11 +8,7 @@ const NAV = [
   { label: 'Problems', icon: 'grid', to: '/problems' },
   { label: 'Contests', icon: 'trophy', to: '/contests' },
   { label: 'Standings', icon: 'chart', to: '/standings' },
-  { label: 'Practice', icon: 'target', to: '/practice' },
-  { label: 'Groups', icon: 'users', to: '/groups' },
 ];
-
-const NAV_SUB = [{ label: 'Settings', icon: 'settings', to: '/settings' }];
 
 const linkClass = ({ isActive }) => `nav-link${isActive ? ' is-active' : ''}`;
 
@@ -60,16 +56,6 @@ export default function Sidebar({ user, open = false, onClose }) {
         </nav>
 
         <div className="side-foot">
-          {NAV_SUB.map((item) => {
-            const Icon = Icons[item.icon] || Icons.settings;
-            return (
-              <NavLink key={item.to} to={item.to} className={linkClass} onClick={onClose}>
-                <Icon size={18} />
-                <span>{item.label}</span>
-              </NavLink>
-            );
-          })}
-
           <div className="nav-mini">
             <div className="avatar">{user?.initials}</div>
             <div className="mid">

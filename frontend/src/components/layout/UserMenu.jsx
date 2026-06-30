@@ -63,7 +63,12 @@ export default function UserMenu({ user }) {
             <Icons.edit size={16} /> Edit profile
           </a>
           <div className="um-sep" />
-          <button type="button" className="um-item danger" role="menuitem" onClick={handleLogout}>
+          <button
+            type="button"
+            className="um-item danger"
+            role="menuitem"
+            onClick={handleLogout}
+          >
             <Icons.logout size={16} /> Logout
           </button>
         </div>

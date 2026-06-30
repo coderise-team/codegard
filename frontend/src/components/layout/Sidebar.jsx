@@ -33,7 +33,10 @@ export default function Sidebar({ user, open = false, onClose }) {
         <div className="side-top">
           <Link to="/" className="logo" onClick={onClose}>
             <span className="mark">C</span>
-            <span><span className="wm-a">Code</span><span className="wm-b">gard</span></span>
+            <span>
+              <span className="wm-a">Code</span>
+              <span className="wm-b">gard</span>
+            </span>
           </Link>
         </div>
 

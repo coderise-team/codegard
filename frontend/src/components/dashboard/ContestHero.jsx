@@ -26,7 +26,11 @@ export default function ContestHero() {
   useTick(state === 'live' || state === 'soon');
 
   if (loading) {
-    return <section className="hero"><div className="list-msg">Loading…</div></section>;
+    return (
+      <section className="hero">
+        <div className="list-msg">Loading…</div>
+      </section>
+    );
   }
   if (error) {
     return (
@@ -62,9 +66,12 @@ function LiveHero({ contest, standing }) {
   return (
     <section className="hero">
       <div className="hero-hd">
-        <span className="hbadge live"><span className="d" /> Live now</span>
+        <span className="hbadge live">
+          <span className="d" /> Live now
+        </span>
         <span className="reg-chip">
-          <I.users size={14} /> <b>{contest.participants_count.toLocaleString()}</b> competing
+          <I.users size={14} />{' '}
+          <b>{contest.participants_count.toLocaleString()}</b> competing
         </span>
       </div>
 
@@ -74,16 +81,25 @@ function LiveHero({ contest, standing }) {
       <div className="hero-meta">
         <div className="m">
           <div className="k">Ends in</div>
-          <div className={`v clock${urgent ? ' urgent' : ''}`}>{fmtCountdown(remaining)}</div>
+          <div className={`v clock${urgent ? ' urgent' : ''}`}>
+            {fmtCountdown(remaining)}
+          </div>
         </div>
         <div className="m">
           <div className="k">Duration</div>
-          <div className="v">{formatDuration(contest.start_time, contest.end_time)}</div>
+          <div className="v">
+            {formatDuration(contest.start_time, contest.end_time)}
+          </div>
         </div>
-        <div className="m"><div className="k">Problems</div><div className="v">{problems.length}</div></div>
+        <div className="m">
+          <div className="k">Problems</div>
+          <div className="v">{problems.length}</div>
+        </div>
         <div className="m">
           <div className="k">Your rank</div>
-          <div className="v">{standing.rank != null ? `#${standing.rank}` : '—'}</div>
+          <div className="v">
+            {standing.rank != null ? `#${standing.rank}` : '—'}
+          </div>
         </div>
       </div>
 
@@ -93,8 +109,13 @@ function LiveHero({ contest, standing }) {
           return (
             <a key={p.id} className={`hpip s-${p.status}`} href="#">
               <span className="lid">{p.label}</span>
-              <span className="ld"><span className="nm">{p.title}</span></span>
-              <span className="stx" style={{ color: STATUS_COLOR[p.status] || 'var(--fg3)' }}>
+              <span className="ld">
+                <span className="nm">{p.title}</span>
+              </span>
+              <span
+                className="stx"
+                style={{ color: STATUS_COLOR[p.status] || 'var(--fg3)' }}
+              >
                 <St size={15} />
               </span>
             </a>
@@ -104,11 +125,23 @@ function LiveHero({ contest, standing }) {
 
       <div className="hero-foot">
         <div className="hero-stand">
-          <div className="s"><div className="k">Score</div><div className="v"><span className="pl">{standing.score}</span></div></div>
-          <div className="s"><div className="k">Solved</div><div className="v">{standing.solved}/{problems.length}</div></div>
+          <div className="s">
+            <div className="k">Score</div>
+            <div className="v">
+              <span className="pl">{standing.score}</span>
+            </div>
+          </div>
+          <div className="s">
+            <div className="k">Solved</div>
+            <div className="v">
+              {standing.solved}/{problems.length}
+            </div>
+          </div>
         </div>
         <div className="hero-cta">
-          <a className="btn btn-primary" href="#"><I.play size={15} /> Enter round</a>
+          <a className="btn btn-primary" href="#">
+            <I.play size={15} /> Enter round
+          </a>
         </div>
       </div>
     </section>
@@ -139,9 +172,12 @@ function SoonHero({ contest, onChanged }) {
   return (
     <section className="hero">
       <div className="hero-hd">
-        <span className="hbadge soon"><I.clock size={13} /> Starts soon</span>
+        <span className="hbadge soon">
+          <I.clock size={13} /> Starts soon
+        </span>
         <span className="reg-chip">
-          <I.users size={14} /> <b>{contest.participants_count.toLocaleString()}</b> registered
+          <I.users size={14} />{' '}
+          <b>{contest.participants_count.toLocaleString()}</b> registered
         </span>
       </div>
 
@@ -149,19 +185,29 @@ function SoonHero({ contest, onChanged }) {
       <div className="hero-round">{contest.subtitle}</div>
 
       <div className="hero-meta">
-        <div className="m"><div className="k">Starts in</div><div className="v clock">{fmtCountdown(startsIn)}</div></div>
+        <div className="m">
+          <div className="k">Starts in</div>
+          <div className="v clock">{fmtCountdown(startsIn)}</div>
+        </div>
         <div className="m">
           <div className="k">Duration</div>
-          <div className="v">{formatDuration(contest.start_time, contest.end_time)}</div>
+          <div className="v">
+            {formatDuration(contest.start_time, contest.end_time)}
+          </div>
         </div>
-        <div className="m"><div className="k">Problems</div><div className="v">{contest.problems_count}</div></div>
+        <div className="m">
+          <div className="k">Problems</div>
+          <div className="v">{contest.problems_count}</div>
+        </div>
       </div>
 
       <div className="hero-preview">
         <span className="pv-k">Problems</span>
         <div className="pv-pips">
           {Array.from({ length: contest.problems_count }, (_, i) => (
-            <span key={i} className="pv-pip">{pip(i)}</span>
+            <span key={i} className="pv-pip">
+              {pip(i)}
+            </span>
           ))}
         </div>
         <span className="pv-note">revealed when the round starts</span>
@@ -169,15 +215,26 @@ function SoonHero({ contest, onChanged }) {
 
       <div className="hero-foot">
         <div className="hero-stand">
-          <div className="s"><div className="k">Going</div><div className="v">{contest.participants_count.toLocaleString()}</div></div>
+          <div className="s">
+            <div className="k">Going</div>
+            <div className="v">
+              {contest.participants_count.toLocaleString()}
+            </div>
+          </div>
         </div>
         <div className="hero-cta">
           {contest.is_joined ? (
-            <button className="reg-pill done" onClick={unregister}><I.checkBold size={14} /> Registered</button>
+            <button className="reg-pill done" onClick={unregister}>
+              <I.checkBold size={14} /> Registered
+            </button>
           ) : (
-            <button className="btn btn-primary" onClick={register}><I.flag size={15} /> Register</button>
+            <button className="btn btn-primary" onClick={register}>
+              <I.flag size={15} /> Register
+            </button>
           )}
-          <a className="btn" href="#">Problems</a>
+          <a className="btn" href="#">
+            Problems
+          </a>
         </div>
       </div>
     </section>
@@ -188,13 +245,19 @@ function NoContest() {
   const I = Icons;
   return (
     <section className="hero">
-      <div className="hero-hd"><span className="hbadge none">No live contest</span></div>
+      <div className="hero-hd">
+        <span className="hbadge none">No live contest</span>
+      </div>
       <div className="hero-title">No active or upcoming contests</div>
-      <div className="hero-round">New rounds will appear here once scheduled.</div>
+      <div className="hero-round">
+        New rounds will appear here once scheduled.
+      </div>
       <div className="hero-foot">
         <div className="hero-stand" />
         <div className="hero-cta">
-          <a className="btn btn-primary" href="#"><I.trophy size={15} /> Browse contests</a>
+          <a className="btn btn-primary" href="#">
+            <I.trophy size={15} /> Browse contests
+          </a>
         </div>
       </div>
     </section>

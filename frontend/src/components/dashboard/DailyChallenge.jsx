@@ -31,21 +31,31 @@ export default function DailyChallenge() {
         <span className="t">
           <I.flame size={16} style={{ color: 'var(--tle)' }} /> Daily challenge
         </span>
-        <button className="more">All <I.chevRight size={13} /></button>
+        <button className="more">
+          All <I.chevRight size={13} />
+        </button>
       </div>
       <div className="card-bd">
         {loading && <div className="list-msg">Loading…</div>}
-        {error && <div className="list-msg">Couldn’t load the daily challenge.</div>}
+        {error && (
+          <div className="list-msg">Couldn’t load the daily challenge.</div>
+        )}
         {data && data.daily && (
           <>
             <div className="daily-top">
               <div className="dt-main">
                 <div className="dt-title">{data.daily.title}</div>
                 <div className="dt-sub">
-                  <span className={`df d-${data.daily.difficulty.toLowerCase()}`}>
+                  <span
+                    className={`df d-${data.daily.difficulty.toLowerCase()}`}
+                  >
                     {data.daily.difficulty}
                   </span>
-                  {data.daily.tags.map((t) => <span key={t} className="tag">{t}</span>)}
+                  {data.daily.tags.map((t) => (
+                    <span key={t} className="tag">
+                      {t}
+                    </span>
+                  ))}
                 </div>
                 <div className="dt-acc">{data.daily.acceptance}% AC</div>
               </div>
@@ -67,7 +77,8 @@ export default function DailyChallenge() {
             </div>
 
             <button className="btn btn-primary btn-block">
-              <I.bolt size={15} /> {data.daily.solved_today ? 'Solved today ✓' : 'Solve today'}
+              <I.bolt size={15} />{' '}
+              {data.daily.solved_today ? 'Solved today ✓' : 'Solve today'}
             </button>
           </>
         )}

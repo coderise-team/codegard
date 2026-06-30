@@ -12,7 +12,11 @@ import UserMenu from './UserMenu';
 export default function Navbar({ user, title = 'Dashboard', onMenuClick }) {
   return (
     <header className="tbar">
-      <button className="nav-burger icon-btn" title="Menu" onClick={onMenuClick}>
+      <button
+        className="nav-burger icon-btn"
+        title="Menu"
+        onClick={onMenuClick}
+      >
         <Icons.menu size={18} />
       </button>
       <div className="crumb">{title}</div>

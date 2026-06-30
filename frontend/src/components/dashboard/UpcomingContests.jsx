@@ -42,8 +42,12 @@ export default function UpcomingContests() {
   return (
     <section className="card">
       <div className="card-hd">
-        <span className="t"><I.calendar size={16} /> Upcoming</span>
-        <button className="more">Calendar <I.chevRight size={13} /></button>
+        <span className="t">
+          <I.calendar size={16} /> Upcoming
+        </span>
+        <button className="more">
+          Calendar <I.chevRight size={13} />
+        </button>
       </div>
       <div className="card-bd flush">
         {loading && <div className="list-msg">Loading…</div>}

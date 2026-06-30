@@ -29,8 +29,12 @@ export default function RecentSubmissions() {
   return (
     <section className="card">
       <div className="card-hd">
-        <span className="t"><I.list size={16} /> Recent submissions</span>
-        <button className="more">All <I.chevRight size={13} /></button>
+        <span className="t">
+          <I.list size={16} /> Recent submissions
+        </span>
+        <button className="more">
+          All <I.chevRight size={13} />
+        </button>
       </div>
       <div className="card-bd flush">
         {loading && <div className="list-msg">Loading…</div>}
@@ -39,7 +43,10 @@ export default function RecentSubmissions() {
           <table className="subtab">
             <thead>
               <tr>
-                <th>Problem</th><th>Verdict</th><th>Lang</th><th>Runtime</th>
+                <th>Problem</th>
+                <th>Verdict</th>
+                <th>Lang</th>
+                <th>Runtime</th>
                 <th style={{ textAlign: 'right' }}>When</th>
               </tr>
             </thead>

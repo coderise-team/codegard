@@ -30,12 +30,18 @@ export default function PastContests() {
   return (
     <section className="card">
       <div className="card-hd">
-        <span className="t"><I.trophy size={16} /> Contest history</span>
-        <button className="more">All <I.chevRight size={13} /></button>
+        <span className="t">
+          <I.trophy size={16} /> Contest history
+        </span>
+        <button className="more">
+          All <I.chevRight size={13} />
+        </button>
       </div>
       <div className="card-bd flush">
         {loading && <div className="list-msg">Loading…</div>}
-        {error && <div className="list-msg">Couldn’t load contest history.</div>}
+        {error && (
+          <div className="list-msg">Couldn’t load contest history.</div>
+        )}
         {data && data.length > 0 && (
           <div className="rowlist">
             {data.slice(0, MAX_ROWS).map((c) => {
@@ -52,10 +58,13 @@ export default function PastContests() {
                     </div>
                   </div>
                   <div className="lr-right">
-                    <span className="cc-rank">{c.rank != null ? `#${c.rank}` : '—'}</span>
+                    <span className="cc-rank">
+                      {c.rank != null ? `#${c.rank}` : '—'}
+                    </span>
                     {hasDelta && (
                       <span className={`cc-delta ${up ? 'up' : 'down'}`}>
-                        {up ? '+' : ''}{c.rating_delta}
+                        {up ? '+' : ''}
+                        {c.rating_delta}
                       </span>
                     )}
                   </div>

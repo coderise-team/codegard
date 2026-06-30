@@ -5,9 +5,24 @@ import { useUserStats } from '../../hooks/useUserStats';
 // Card layout is presentation, not data — labels/icons are fixed here,
 // values come from the API.
 const STATS = [
-  { key: 'solved', label: 'Solved', icon: 'checkBold', format: (v) => String(v) },
-  { key: 'contests', label: 'Contests', icon: 'trophy', format: (v) => String(v) },
-  { key: 'acceptance', label: 'Acceptance', icon: 'target', format: (v) => `${v}%` },
+  {
+    key: 'solved',
+    label: 'Solved',
+    icon: 'checkBold',
+    format: (v) => String(v),
+  },
+  {
+    key: 'contests',
+    label: 'Contests',
+    icon: 'trophy',
+    format: (v) => String(v),
+  },
+  {
+    key: 'acceptance',
+    label: 'Acceptance',
+    icon: 'target',
+    format: (v) => `${v}%`,
+  },
 ];
 
 /**
@@ -24,7 +39,9 @@ export default function StatsStrip() {
         const Icon = Icons[icon];
         return (
           <div className="stat" key={key}>
-            <div className="si"><Icon size={18} /></div>
+            <div className="si">
+              <Icon size={18} />
+            </div>
             <div>
               <div className="sv">{data ? format(data[key]) : '—'}</div>
               <div className="sk">{label}</div>

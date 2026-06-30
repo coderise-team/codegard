@@ -19,12 +19,18 @@ function Calendar({ activity }) {
         <div className="cal-months">
           {months.map((m, idx) => {
             const next = months[idx + 1] ? months[idx + 1].i : W;
-            return <span key={m.i} style={{ width: (next - m.i) * 14 }}>{m.label}</span>;
+            return (
+              <span key={m.i} style={{ width: (next - m.i) * 14 }}>
+                {m.label}
+              </span>
+            );
           })}
         </div>
         <div className="cal-days">
           {[0, 1, 2, 3, 4, 5, 6].map((r) => (
-            <span key={r} style={{ gridRow: r + 1 }}>{DAY_LABEL[r] || ''}</span>
+            <span key={r} style={{ gridRow: r + 1 }}>
+              {DAY_LABEL[r] || ''}
+            </span>
           ))}
         </div>
         <div className="cal-grid">
@@ -47,7 +53,10 @@ function Calendar({ activity }) {
       <div className="cal-foot">
         <span>{activity.days} active days</span>
         <span className="cf-legend">
-          Less <i className="cc l1" /><i className="cc l2" /><i className="cc l3" /><i className="cc l4" /> More
+          Less <i className="cc l1" />
+          <i className="cc l2" />
+          <i className="cc l3" />
+          <i className="cc l4" /> More
         </span>
       </div>
     </div>
@@ -62,14 +71,21 @@ export default function ActivityHeatmap() {
   const I = Icons;
   const username = useAuthStore((s) => s.user?.username);
   const { data: counts, loading, error } = useUserActivity(username);
-  const activity = useMemo(() => (counts ? buildHeatmap(counts) : null), [counts]);
+  const activity = useMemo(
+    () => (counts ? buildHeatmap(counts) : null),
+    [counts]
+  );
 
   return (
     <section className="card act-card">
       <div className="card-hd">
-        <span className="t"><I.flame size={16} /> Activity</span>
+        <span className="t">
+          <I.flame size={16} /> Activity
+        </span>
         {activity && (
-          <span className="act-sum"><b>{activity.total}</b> submissions · 1 yr</span>
+          <span className="act-sum">
+            <b>{activity.total}</b> submissions · 1 yr
+          </span>
         )}
       </div>
       {loading && <div className="list-msg">Loading…</div>}

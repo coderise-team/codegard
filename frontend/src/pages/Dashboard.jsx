@@ -26,12 +26,18 @@ export default function Dashboard() {
       <Sidebar user={user} open={navOpen} onClose={() => setNavOpen(false)} />
 
       <div className="main">
-        <Navbar user={user} title="Dashboard" onMenuClick={() => setNavOpen(true)} />
+        <Navbar
+          user={user}
+          title="Dashboard"
+          onMenuClick={() => setNavOpen(true)}
+        />
 
         <div className="canvas scroll">
           <div className="canvas-in">
             <div className="hello">
-              <h1>Welcome back, <b>{user?.username}</b></h1>
+              <h1>
+                Welcome back, <b>{user?.username}</b>
+              </h1>
             </div>
 
             <div className="lay-swap">

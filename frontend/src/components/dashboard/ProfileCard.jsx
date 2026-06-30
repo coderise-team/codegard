@@ -43,14 +43,19 @@ function RatingRing({ rating, rank, frac }) {
 
 /** Rating-history sparkline (oldest → newest). Needs at least 2 points. */
 function Sparkline({ history }) {
-  const W = 300, H = 56, pad = 4;
+  const W = 300,
+    H = 56,
+    pad = 4;
   const rs = history.map((h) => h.rating);
-  const min = Math.min(...rs), max = Math.max(...rs);
+  const min = Math.min(...rs),
+    max = Math.max(...rs);
   const span = max - min || 1;
   const x = (i) => pad + (i * (W - 2 * pad)) / (history.length - 1);
   const y = (r) => pad + (1 - (r - min) / span) * (H - 2 * pad);
   const line = history
-    .map((h, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)} ${y(h.rating).toFixed(1)}`)
+    .map(
+      (h, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)} ${y(h.rating).toFixed(1)}`
+    )
     .join(' ');
   const area = `${line} L${x(history.length - 1).toFixed(1)} ${H} L${x(0).toFixed(1)} ${H} Z`;
   const last = history[history.length - 1];
@@ -59,7 +64,9 @@ function Sparkline({ history }) {
     <div className="spark">
       <div className="shd">
         <span className="k">Rating · last {history.length}</span>
-        <span className="v">{min}–{max}</span>
+        <span className="v">
+          {min}–{max}
+        </span>
       </div>
       <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
         <defs>
@@ -108,8 +115,12 @@ export default function ProfileCard() {
   return (
     <section className="card profile">
       <div className="card-hd">
-        <span className="t"><Icons.award size={16} /> Your standing</span>
-        <button className="more">Profile <Icons.chevRight size={13} /></button>
+        <span className="t">
+          <Icons.award size={16} /> Your standing
+        </span>
+        <button className="more">
+          Profile <Icons.chevRight size={13} />
+        </button>
       </div>
 
       {loading && <div className="list-msg">Loading…</div>}
@@ -117,20 +128,30 @@ export default function ProfileCard() {
 
       {data && (
         <div className="card-bd">
-          <RatingRing rating={data.user.elo_rating} rank={data.user.rank} frac={frac} />
+          <RatingRing
+            rating={data.user.elo_rating}
+            rank={data.user.rank}
+            frac={frac}
+          />
           <div className="pmeta">
             <div className="pname">
               {data.user.username}
               {delta != null && (
                 <span className={`pdelta ${delta >= 0 ? 'up' : 'down'}`}>
-                  {delta >= 0 ? <Icons.arrowUp size={12} /> : <Icons.arrowDown size={12} />}
-                  {delta >= 0 ? '+' : ''}{delta}
+                  {delta >= 0 ? (
+                    <Icons.arrowUp size={12} />
+                  ) : (
+                    <Icons.arrowDown size={12} />
+                  )}
+                  {delta >= 0 ? '+' : ''}
+                  {delta}
                 </span>
               )}
             </div>
 
             <div className="ptier">
-              Global rank <b>#{data.user.globalRank}</b> · max {data.user.maxRating}
+              Global rank <b>#{data.user.globalRank}</b> · max{' '}
+              {data.user.maxRating}
             </div>
 
             {data.user.nextTier && (

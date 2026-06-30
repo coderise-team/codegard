@@ -1,10 +1,18 @@
 from rest_framework import mixins, status, viewsets
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .models import Submission
 from .serializers import SubmissionCreateSerializer, SubmissionSerializer
 from .tasks import push_to_judge_queue
+
+LANGUAGE_TEMPLATES = {
+    Submission.Language.PYTHON: {
+        "name": Submission.Language.PYTHON.label,
+        "template": "import sys\n\ndata = sys.stdin.read().split()\n# your code here \n",
+    },
+}
 
 
 class SubmissionViewSet(
@@ -55,3 +63,24 @@ class SubmissionViewSet(
             },
             status=status.HTTP_201_CREATED,
         )
+
+class LanguagesView(APIView):
+    """ GET /api/languages/ - supported languages + editor starter templates.
+
+    Public config (the editor needs it); not user-specific.
+    """
+
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        templates = [
+            {
+                "id": lang.value,
+                "name": data["name"],
+                "template": data["template"],
+            }
+            for lang, data in LANGUAGE_TEMPLATES.items()
+        ]
+
+        return Response(templates)
+

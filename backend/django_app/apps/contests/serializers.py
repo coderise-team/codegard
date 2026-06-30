@@ -127,7 +127,7 @@ class LeaderboardEntrySerializer(serializers.ModelSerializer):
 # PERSONAL CONTEST DATA SERIALIZERS
 
 
-class MyContestHistorySerializer(serializers.ModelSerializer):
+class ContestHistorySerializer(serializers.ModelSerializer):
     """One past-contest row for the PastContests block (from a ContestScore)."""
 
     id = serializers.IntegerField(source="contest.id", read_only=True)

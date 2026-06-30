@@ -1,4 +1,4 @@
-"""Tests for personal contest data: subtitle, rating fields, my-standing, my-history."""
+"""Tests for personal contest data: subtitle, rating, my-standing, contest-history."""
 
 from datetime import timedelta
 

@@ -1116,8 +1116,10 @@
   flex-direction: column;
 }
 .col-main .act-card {
-  flex: 1 1 0;
-  min-height: 0;
+  /* Grow to fill leftover column height for alignment, but never shrink below
+     the calendar's own height (the card clips overflow, which would squash it
+     to a thin strip when the other column is short). */
+  flex: 1 0 auto;
 }
 .act-card .card-bd {
   flex: 1;

@@ -28,6 +28,9 @@ from .serializers import (
 # Number of days included in a user's submission activity timeline.
 ACTIVITY_WINDOW_DAYS = 365
 
+# Number of most-recent submissions returned for a public profile.
+RECENT_SUBMISSIONS_LIMIT = 15
+
 
 class RegisterView(APIView):
     """Register a new user and immediately issue JWT tokens."""
@@ -202,6 +205,28 @@ class UserContestHistoryView(APIView):
         user = get_object_or_404(User, username=username)
         history = get_contest_history(user)
         return Response(ContestHistorySerializer(history, many=True).data)
+
+
+class UserSubmissionsView(APIView):
+    """Latest submissions for a user, for the ProfilePage RecentSubmissions block.
+
+    GET /api/users/{username}/submissions/ -> list, newest first, capped.
+    Source code is intentionally omitted (see PublicSubmissionSerializer).
+    Any authenticated user can view anyone's submissions (like stats/streak).
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, username: str):
+        from apps.submissions.serializers import PublicSubmissionSerializer
+
+        user = get_object_or_404(User, username=username)
+        submissions = (
+            Submission.objects.filter(user=user)
+            .select_related("problem")
+            .order_by("-created_at")[:RECENT_SUBMISSIONS_LIMIT]
+        )
+        return Response(PublicSubmissionSerializer(submissions, many=True).data)
 
 
 class UserDetailView(RetrieveAPIView):

@@ -73,3 +73,33 @@ class SubmissionSerializer(serializers.ModelSerializer):
 
     def get_is_pending(self, obj):
         return obj.verdict is None
+
+
+class PublicSubmissionSerializer(serializers.ModelSerializer):
+    """Read-only submission row for a public profile — no source code.
+
+    Used by GET /api/users/{username}/submissions/. Deliberately omits
+    `code`/`stderr`/`error_message`: never expose another user's source.
+    """
+
+    problem_title = serializers.CharField(source="problem.title", read_only=True)
+    verdict_display = serializers.CharField(
+        source="get_verdict_display", read_only=True
+    )
+    language_display = serializers.CharField(
+        source="get_language_display", read_only=True
+    )
+
+    class Meta:
+        model = Submission
+        fields = [
+            "id",
+            "problem",
+            "problem_title",
+            "verdict",
+            "verdict_display",
+            "language_display",
+            "execution_time_ms",
+            "created_at",
+        ]
+        read_only_fields = fields

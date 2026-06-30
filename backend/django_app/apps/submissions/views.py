@@ -1,5 +1,5 @@
 from rest_framework import mixins, status, viewsets
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -10,7 +10,8 @@ from .tasks import push_to_judge_queue
 LANGUAGE_TEMPLATES = {
     Submission.Language.PYTHON: {
         "name": Submission.Language.PYTHON.label,
-        "template": "import sys\n\ndata = sys.stdin.read().split()\n# your code here \n",
+        "template": "import sys\n\ndata = sys.stdin.read().split()\n"
+        "# your code here \n",
     },
 }
 
@@ -64,8 +65,9 @@ class SubmissionViewSet(
             status=status.HTTP_201_CREATED,
         )
 
+
 class LanguagesView(APIView):
-    """ GET /api/languages/ - supported languages + editor starter templates.
+    """GET /api/languages/ - supported languages + editor starter templates.
 
     Public config (the editor needs it); not user-specific.
     """
@@ -83,4 +85,3 @@ class LanguagesView(APIView):
         ]
 
         return Response(templates)
-

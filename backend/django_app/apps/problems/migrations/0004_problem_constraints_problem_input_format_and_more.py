@@ -4,30 +4,40 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('problems', '0003_dailyproblem'),
+        ("problems", "0003_dailyproblem"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='problem',
-            name='constraints',
-            field=models.TextField(default='', help_text='One constraint per line; the frontend renders them as a list.'),
+            model_name="problem",
+            name="constraints",
+            field=models.TextField(
+                default="",
+                help_text="One constraint per line; the frontend renders them as a list.",
+            ),
         ),
         migrations.AddField(
-            model_name='problem',
-            name='input_format',
-            field=models.TextField(default='', help_text='Input format section of the statement.'),
+            model_name="problem",
+            name="input_format",
+            field=models.TextField(
+                default="", help_text="Input format section of the statement."
+            ),
         ),
         migrations.AddField(
-            model_name='problem',
-            name='output_format',
-            field=models.TextField(default='', help_text='Output format section of the statement.'),
+            model_name="problem",
+            name="output_format",
+            field=models.TextField(
+                default="", help_text="Output format section of the statement."
+            ),
         ),
         migrations.AddField(
-            model_name='testcase',
-            name='note',
-            field=models.TextField(blank=True, default='', help_text='Optional note shown under a sample example (visible test cases only).'),
+            model_name="testcase",
+            name="note",
+            field=models.TextField(
+                blank=True,
+                default="",
+                help_text="Optional note shown under a sample example (visible test cases only).",
+            ),
         ),
     ]

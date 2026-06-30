@@ -61,7 +61,9 @@ class TestContentFieldsRequired:
         assert problem.output_format == "Two indices."
         assert problem.constraints.startswith("2 <= n")
 
-    @pytest.mark.parametrize("missing", ["input_format", "output_format", "constraints"])
+    @pytest.mark.parametrize(
+        "missing", ["input_format", "output_format", "constraints"]
+    )
     def test_create_without_a_content_field_is_400(self, admin_client, missing):
         payload = _valid_payload()
         payload.pop(missing)
@@ -97,9 +99,7 @@ class TestContentFieldsReturned:
 @pytest.mark.django_db
 class TestExampleNote:
     def test_visible_test_case_note_is_returned_to_user(self, user_client):
-        problem = Problem.objects.create(
-            title="P", description="b", difficulty="easy"
-        )
+        problem = Problem.objects.create(title="P", description="b", difficulty="easy")
         TestCase.objects.create(
             problem=problem,
             input="1 2\n3",
@@ -112,9 +112,7 @@ class TestExampleNote:
         assert resp.data["test_cases"][0]["note"] == "indices are 0-based"
 
     def test_note_is_optional(self, user_client):
-        problem = Problem.objects.create(
-            title="P", description="b", difficulty="easy"
-        )
+        problem = Problem.objects.create(title="P", description="b", difficulty="easy")
         TestCase.objects.create(
             problem=problem, input="x", expected_output="y", is_hidden=False
         )

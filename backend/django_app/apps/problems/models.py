@@ -93,7 +93,8 @@ class TestCase(models.Model):
     note = models.TextField(
         blank=True,
         default="",
-        help_text="Optional note shown under a sample example (visible test cases only)."
+        help_text="Optional note shown under a sample example "
+        "(visible test cases only).",
     )
     is_hidden = models.BooleanField(
         default=False,

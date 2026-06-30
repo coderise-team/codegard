@@ -2,7 +2,6 @@
 // Output: { weeks:[[cell|null ×7]…], months:[{i,label}], total, days }
 //   cell = { c: count, t: "Jun 4" }.  Columns are weeks, Sunday-first.
 
-const DAY_MS = 86400000;
 const MONTHS = [
   'Jan',
   'Feb',
@@ -26,7 +25,11 @@ export function buildHeatmap(counts, weeksBack = 52) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const start = new Date(today.getTime() - weeksBack * 7 * DAY_MS);
+  // Step by calendar days (setDate), never by a fixed 24h: a fixed-ms day drifts
+  // across DST transitions (a 25h fall-back day lands the cursor at 23:00, so the
+  // same Sunday is detected twice and a week column comes out a cell short).
+  const start = new Date(today);
+  start.setDate(start.getDate() - weeksBack * 7);
   start.setDate(start.getDate() - start.getDay()); // back to the week's Sunday
 
   const weeks = [];
@@ -35,7 +38,7 @@ export function buildHeatmap(counts, weeksBack = 52) {
   let days = 0;
   let lastMonth = -1;
 
-  let cur = new Date(start);
+  const cur = new Date(start);
   while (cur <= today || cur.getDay() !== 0) {
     // Start a new column every Sunday; label it if a new month begins here.
     if (cur.getDay() === 0) {
@@ -59,7 +62,7 @@ export function buildHeatmap(counts, weeksBack = 52) {
     }
     week.push(cell);
 
-    cur = new Date(cur.getTime() + DAY_MS);
+    cur.setDate(cur.getDate() + 1);
   }
 
   return { weeks, months, total, days };

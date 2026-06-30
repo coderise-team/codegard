@@ -365,8 +365,55 @@
   .canvas-in > *, .top-band > *, .cols > * { animation: cardIn .45s cubic-bezier(.2,.7,.3,1); }
 }
 
+/* burger + drawer scrim: off on desktop, shown only on phones (see ≤640) */
+.nav-burger { display: none; }
+.side-scrim { display: none; }
+
 @media (max-width: 960px) {
   .cols, .lay-swap .top-band { grid-template-columns: minmax(0, 1fr); }
   .dash, .dash[data-density="compact"] { grid-template-columns: 64px minmax(0, 1fr); }
-  .side .nav-link span, .side .logo span:last-child, .nav-mini .mid { display: none; }
+  .side .nav-link span, .side .logo > span:last-child, .nav-mini .mid { display: none; }
+}
+
+/* ---- phone: off-canvas drawer + single-column feed ---- */
+@media (max-width: 640px) {
+  /* main takes the full width; the sidebar leaves the flow as a drawer */
+  .dash, .dash[data-density="compact"] { grid-template-columns: minmax(0, 1fr); }
+
+  .nav-burger { display: inline-flex; }
+  .gsearch, .tbar .user-chip .meta { display: none; }
+
+  /* keep the 3 quick stats in one row — stack icon over value so each fits */
+  .stat { flex-direction: column; align-items: flex-start; gap: 8px; padding: 13px 11px; min-width: 0; }
+
+  /* sidebar → off-canvas drawer, slides in from the left over a scrim */
+  .side {
+    position: fixed; top: 0; left: 0; bottom: 0; width: 232px; z-index: 50;
+    transform: translateX(-100%); transition: transform .22s ease;
+  }
+  .side.open { transform: translateX(0); box-shadow: 0 0 40px rgba(0, 0, 0, .5); }
+  /* restore the labels the ≤960 rule hides — the drawer is full-width.
+     Use a direct child for the wordmark: `span:last-child` also matches
+     `.wm-b` inside it, which would break "Codegard" onto two lines. */
+  .side .nav-link span, .side .logo > span:last-child, .nav-mini .mid { display: block; }
+  .side-scrim.show {
+    display: block; position: fixed; inset: 0; z-index: 40;
+    background: rgba(0, 0, 0, .5);
+  }
+
+  .canvas-in { padding: 16px 14px 40px; }
+
+  /* one column, rail (daily/upcoming/history) before main (lists/activity) */
+  .cols { display: flex; flex-direction: column; }
+  .col-rail { order: -1; }
+
+  /* shrink the ring so the profile card fits a narrow screen */
+  .lay-swap .ring-wrap { width: 188px; height: 188px; }
+  .lay-swap .ring-center .elo { font-size: 42px; }
+
+  /* keep the table, just tighten column padding so it fits */
+  .subtab th, .subtab td { padding: 9px 8px; }
+
+  /* the year calendar is wider than the screen — let it scroll sideways */
+  .act-card .card-bd { overflow-x: auto; }
 }

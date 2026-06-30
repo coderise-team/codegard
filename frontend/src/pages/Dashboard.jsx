@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import Sidebar from '../components/layout/Sidebar';
 import Navbar from '../components/layout/Navbar';
 import ProfileCard from '../components/dashboard/ProfileCard';
@@ -18,13 +19,14 @@ import './Dashboard.css';
  */
 export default function Dashboard() {
   const user = useCurrentUser();
+  const [navOpen, setNavOpen] = useState(false);
 
   return (
     <div className="dash" data-density="compact">
-      <Sidebar user={user} />
+      <Sidebar user={user} open={navOpen} onClose={() => setNavOpen(false)} />
 
       <div className="main">
-        <Navbar user={user} title="Dashboard" />
+        <Navbar user={user} title="Dashboard" onMenuClick={() => setNavOpen(true)} />
 
         <div className="canvas scroll">
           <div className="canvas-in">

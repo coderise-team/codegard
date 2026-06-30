@@ -33,6 +33,7 @@ const Icons = {
   bolt:      (p) => <Ic {...p} fill="currentColor" sw={0} d={<path d="M13 2 4 14h6l-1 8 9-12h-6z"/>} />,
   trophy:    (p) => <Ic {...p} d={<><path d="M7 4h10v4a5 5 0 0 1-10 0z"/><path d="M7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3"/><path d="M10 14h4M9 20h6M12 14v6"/></>} />,
   list:      (p) => <Ic {...p} d={<><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></>} />,
+  menu:      (p) => <Ic {...p} d={<path d="M4 6h16M4 12h16M4 18h16"/>} />,
   doc:       (p) => <Ic {...p} d={<><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></>} />,
   terminal:  (p) => <Ic {...p} d={<><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9l3 3-3 3M13 15h4"/></>} />,
   settings:  (p) => <Ic {...p} d={<><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></>} />,

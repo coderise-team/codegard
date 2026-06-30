@@ -13,7 +13,9 @@ export async function getUserActivity(username) {
   return data;
 }
 
-// GET users/{username}/ -> { username, elo_rating, rank, avatar, bio }
+// GET users/{username}/ ->
+// { username, elo_rating, rank, avatar, bio, maxRating, globalRank, nextTier }
+// nextTier: { name, floor, ceil } or null at the top tier.
 export async function getUser(username) {
   const { data } = await client.get(`users/${username}/`);
   return data;
@@ -22,5 +24,12 @@ export async function getUser(username) {
 // GET users/{username}/elo-history/ -> [{ rating, created_at }] oldest-first
 export async function getEloHistory(username) {
   const { data } = await client.get(`users/${username}/elo-history/`);
+  return data;
+}
+
+// GET users/{username}/streak/ -> { current_streak, longest_streak, history }
+// history: [{ date, status }] (status: solved | missed | today) oldest-first.
+export async function getStreak(username) {
+  const { data } = await client.get(`users/${username}/streak/`);
   return data;
 }

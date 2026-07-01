@@ -27,7 +27,7 @@ class TestCasePublicSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TestCase
-        fields = ["id", "input", "expected_output"]
+        fields = ["id", "input", "expected_output", "note", "is_hidden"]
 
 
 class ProblemSerializer(serializers.ModelSerializer):
@@ -43,6 +43,9 @@ class ProblemSerializer(serializers.ModelSerializer):
             "id",
             "title",
             "description",
+            "input_format",
+            "output_format",
+            "constraints",
             "difficulty",
             "time_limit",
             "memory_limit",
@@ -99,6 +102,9 @@ class ProblemWriteSerializer(serializers.ModelSerializer):
         min_length=1,
         write_only=True,
     )
+    input_format = serializers.CharField()
+    output_format = serializers.CharField()
+    constraints = serializers.CharField()
 
     class Meta:
         model = Problem
@@ -106,6 +112,9 @@ class ProblemWriteSerializer(serializers.ModelSerializer):
             "id",
             "title",
             "description",
+            "input_format",
+            "output_format",
+            "constraints",
             "difficulty",
             "time_limit",
             "memory_limit",
